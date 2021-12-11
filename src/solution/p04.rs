@@ -45,7 +45,7 @@ impl Parse for Problem {
         let order = it
             .next()
             .unwrap()
-            .split(",")
+            .split(',')
             .map(|s| s.parse().unwrap())
             .collect();
         let mut cards = vec![];

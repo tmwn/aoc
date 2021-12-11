@@ -11,12 +11,12 @@ pub fn small(a: Vec<String>) -> i32 {
     let mut e = 0;
     for (i, k) in v.iter().enumerate() {
         if k * 2 > a.len() {
-            g |= 1 << v.len() - 1 - i;
+            g |= 1 << (v.len() - 1 - i);
         } else {
-            e |= 1 << v.len() - 1 - i;
+            e |= 1 << (v.len() - 1 - i);
         }
     }
-    return g * e;
+    g * e
 }
 
 pub fn large(a: Vec<String>) -> i32 {

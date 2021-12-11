@@ -10,7 +10,7 @@ impl FromStr for Instr {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut ss = s.split(" ");
+        let mut ss = s.split(' ');
         let cmd = ss.next().unwrap();
         let n: i32 = ss.next().unwrap().parse()?;
         Ok(match cmd {
@@ -31,7 +31,7 @@ pub fn small(a: Vec<Instr>) -> i32 {
             Instr::Up(k) => x -= k,
         }
     }
-    return x * y;
+    x * y
 }
 
 pub fn large(a: Vec<Instr>) -> i32 {
@@ -48,5 +48,5 @@ pub fn large(a: Vec<Instr>) -> i32 {
             }
         }
     }
-    return pos * depth;
+    pos * depth
 }

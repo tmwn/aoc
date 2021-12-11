@@ -94,12 +94,12 @@ where
     S::Err: std::fmt::Debug,
 {
     fn parse(s: &str) -> Self {
-        s.split("\n").map(|s| s.parse::<S>().unwrap()).collect()
+        s.split('\n').map(|s| s.parse::<S>().unwrap()).collect()
     }
 }
 
 impl Parse for String {
     fn parse(s: &str) -> Self {
-        return s.to_string();
+        s.to_string()
     }
 }
