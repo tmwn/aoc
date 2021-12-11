@@ -1,7 +1,7 @@
-pub fn small(a: Vec<String>) -> ! {
+pub fn small(_: Vec<String>) -> i32 {
     todo!()
 }
 
-pub fn large(a: Vec<String>) -> ! {
+pub fn large(_: Vec<String>) -> i32 {
     todo!()
 }
