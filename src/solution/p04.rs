@@ -1,11 +1,9 @@
-use std::str::FromStr;
+use super::Parse;
 
-pub fn small(a: String) -> usize {
-    let Problem { order, mut cards } = a.parse().unwrap();
-
-    for o in order {
-        for c in cards.iter_mut() {
-            c.set(o);
+pub fn small(mut p: Problem) -> usize {
+    for o in p.order.iter() {
+        for c in p.cards.iter_mut() {
+            c.set(*o);
             if c.bingo() {
                 return c.score() * o;
             }
@@ -14,19 +12,35 @@ pub fn small(a: String) -> usize {
     panic!("should not reach")
 }
 
-pub fn large(a: String) -> i32 {
-    todo!()
+pub fn large(mut p: Problem) -> usize {
+    let n = p.cards.len();
+    let mut count = 0;
+    let mut done = vec![false; n];
+    for o in p.order.iter() {
+        for (i, c) in p.cards.iter_mut().enumerate() {
+            if done[i] {
+                continue;
+            }
+            c.set(*o);
+            if c.bingo() {
+                done[i] = true;
+                count += 1;
+                if count == n {
+                    return c.score() * o;
+                }
+            }
+        }
+    }
+    panic!("shoud not reach")
 }
 
-struct Problem {
+pub struct Problem {
     order: Vec<usize>,
     cards: Vec<Card>,
 }
 
-impl FromStr for Problem {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+impl Parse for Problem {
+    fn parse(s: &str) -> Self {
         let mut it = s.split_ascii_whitespace();
         let order = it
             .next()
@@ -37,13 +51,13 @@ impl FromStr for Problem {
         let mut cards = vec![];
         while let Some(first) = it.next() {
             let mut board = Board::default();
-            board[0][0] = first.parse()?;
+            board[0][0] = first.parse().unwrap();
             for i in 1..25 {
                 board[i / 5][i % 5] = it.next().unwrap().parse().unwrap();
             }
             cards.push(Card::new(board));
         }
-        Ok(Self { order, cards })
+        Self { order, cards }
     }
 }
 
