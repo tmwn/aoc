@@ -1,7 +1,4 @@
-use super::Parse;
-
-const DX: [isize; 4] = [0, 1, 0, -1];
-const DY: [isize; 4] = [1, 0, -1, 0];
+use super::{util::grid::Grid, Parse};
 
 pub fn small(cave: Cave) -> i32 {
     let h = cave.0.len();
@@ -48,27 +45,15 @@ pub fn large(cave: Cave) -> i32 {
     res
 }
 
-pub struct Cave(Vec<Vec<i32>>);
+pub struct Cave(Grid<i32>);
 
 impl Cave {
-    fn get(&self, i: isize, j: isize) -> Option<&i32> {
-        if let Some(row) = self.0.get(i as usize) {
-            row.get(j as usize)
-        } else {
-            None
-        }
-    }
-
     fn sink(&self, mut i: usize, mut j: usize) -> (usize, usize) {
         while !self.low_point(i, j) {
-            for d in 0..4 {
-                let ni = i as isize + DX[d];
-                let nj = j as isize + DY[d];
-                if let Some(adj) = self.get(ni, nj) {
-                    if *adj < self.0[i][j] {
-                        i = ni as usize;
-                        j = nj as usize;
-                    }
+            for (x, y, v) in self.0.enumerate_adjecent(i, j, false) {
+                if *v < self.0[i][j] {
+                    i = x;
+                    j = y;
                 }
             }
         }
@@ -77,11 +62,9 @@ impl Cave {
 
     fn low_point(&self, i: usize, j: usize) -> bool {
         let cur = self.0[i][j];
-        for d in 0..4 {
-            if let Some(adj) = self.get(i as isize + DX[d], j as isize + DY[d]) {
-                if cur >= *adj {
-                    return false;
-                }
+        for v in self.0.iter_adjecent(i, j, false) {
+            if cur >= *v {
+                return false;
             }
         }
         true
@@ -90,11 +73,26 @@ impl Cave {
 
 impl Parse for Cave {
     fn parse(s: &str) -> Self {
-        Cave(
-            s.trim()
-                .split('\n')
-                .map(|s| s.bytes().map(|x| (x - b'0') as i32).collect())
-                .collect(),
-        )
+        Cave(Grid::parse(s))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::solution::solve;
+
+    const INPUT: &str = r#"2199943210
+3987894921
+9856789892
+8767896789
+9899965678"#;
+
+    #[test]
+    fn small() {
+        assert_eq!(solve(INPUT, 9, false).unwrap(), "15");
+    }
+    #[test]
+    fn large() {
+        assert_eq!(solve(INPUT, 9, true).unwrap(), "1134");
     }
 }

@@ -1,28 +1,30 @@
-pub mod p01;
-pub mod p02;
-pub mod p03;
-pub mod p04;
-pub mod p05;
-pub mod p06;
-pub mod p07;
-pub mod p08;
-pub mod p09;
-pub mod p10;
-pub mod p11;
-pub mod p12;
-pub mod p13;
-pub mod p14;
-pub mod p15;
-pub mod p16;
-pub mod p17;
-pub mod p18;
-pub mod p19;
-pub mod p20;
-pub mod p21;
-pub mod p22;
-pub mod p23;
-pub mod p24;
-pub mod p25;
+mod util;
+
+mod p01;
+mod p02;
+mod p03;
+mod p04;
+mod p05;
+mod p06;
+mod p07;
+mod p08;
+mod p09;
+mod p10;
+mod p11;
+mod p12;
+mod p13;
+mod p14;
+mod p15;
+mod p16;
+mod p17;
+mod p18;
+mod p19;
+mod p20;
+mod p21;
+mod p22;
+mod p23;
+mod p24;
+mod p25;
 
 pub fn solve(input: &str, day: i32, large: bool) -> anyhow::Result<String> {
     Ok(match (large, day) {
