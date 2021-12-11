@@ -27,7 +27,7 @@ impl Parse for Input {
     fn parse(s: &str) -> Self {
         Input(
             s.trim()
-                .split(",")
+                .split(',')
                 .map(|x| x.parse::<i32>().unwrap())
                 .collect::<Vec<_>>(),
         )
@@ -58,7 +58,7 @@ where
 mod tests {
     use crate::solution::solve;
 
-    const INPUT: &'static str = r#"16,1,2,0,4,2,7,1,2,14
+    const INPUT: &str = r#"16,1,2,0,4,2,7,1,2,14
 "#;
     #[test]
     fn small() {

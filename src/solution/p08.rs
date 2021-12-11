@@ -22,7 +22,7 @@ pub fn large(a: Vec<Line>) -> i32 {
     res
 }
 
-const DIGITS: [&'static str; 10] = [
+const DIGITS: [&str; 10] = [
     "abcefg", "cf", "acdeg", "acdfg", "bcdf", "abdfg", "abdefg", "acf", "abcdefg", "abcdfg",
 ];
 
@@ -31,7 +31,7 @@ fn get(letters: &str, permutation: &[u8]) -> Option<i32> {
     for c in letters.bytes() {
         mask.push((permutation[(c - b'a') as usize] + b'a') as char);
     }
-    mask.sort();
+    mask.sort_unstable();
     let s: String = mask.iter().collect();
     for (i, x) in DIGITS.iter().enumerate() {
         if *x == s {
@@ -67,8 +67,8 @@ impl FromStr for Line {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let ss: Vec<_> = s.split(" | ").collect();
-        let input = ss[0].split(" ").map(ToOwned::to_owned).collect();
-        let output = ss[1].split(" ").map(ToOwned::to_owned).collect();
+        let input = ss[0].split(' ').map(ToOwned::to_owned).collect();
+        let output = ss[1].split(' ').map(ToOwned::to_owned).collect();
         Ok(Line { input, output })
     }
 }
@@ -77,7 +77,7 @@ impl FromStr for Line {
 mod tests {
     use crate::solution::solve;
 
-    const INPUT: &'static str = r#"be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
+    const INPUT: &str = r#"be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
 edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
 fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg
 fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega | efabcd cedba gadfec cb

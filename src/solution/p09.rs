@@ -40,7 +40,7 @@ pub fn large(cave: Cave) -> i32 {
             }
         }
     }
-    a.sort();
+    a.sort_unstable();
     let mut res = 1;
     for i in 1..4 {
         res *= a[a.len() - i];
@@ -92,7 +92,7 @@ impl Parse for Cave {
     fn parse(s: &str) -> Self {
         Cave(
             s.trim()
-                .split("\n")
+                .split('\n')
                 .map(|s| s.bytes().map(|x| (x - b'0') as i32).collect())
                 .collect(),
         )

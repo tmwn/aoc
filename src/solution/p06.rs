@@ -8,7 +8,7 @@ pub fn large(input: Vec<String>) -> i64 {
 
 pub fn solve(input: Vec<String>, days: usize) -> i64 {
     let a = input[0]
-        .split(",")
+        .split(',')
         .map(|x| x.parse().unwrap())
         .collect::<Vec<usize>>();
 

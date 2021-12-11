@@ -13,7 +13,7 @@ pub fn small(a: Vec<String>) -> i32 {
     res
 }
 
-const PARENS: &'static str = "(){}<>[]";
+const PARENS: &str = "(){}<>[]";
 
 #[derive(Debug)]
 enum State {
@@ -33,10 +33,8 @@ fn analyze(line: &str) -> State {
     for c in line.chars() {
         if let Some(closing) = to_closing.get(&c) {
             expect.push(*closing);
-        } else {
-            if expect.pop() != Some(c) {
-                return State::Illegal(c);
-            }
+        } else if expect.pop() != Some(c) {
+            return State::Illegal(c);
         }
     }
     State::Incomplete(expect)
@@ -60,7 +58,7 @@ pub fn large(a: Vec<String>) -> i64 {
             scores.push(score);
         }
     }
-    scores.sort();
+    scores.sort_unstable();
     scores[scores.len() / 2]
 }
 
@@ -68,7 +66,7 @@ pub fn large(a: Vec<String>) -> i64 {
 mod tests {
     use crate::solution::solve;
 
-    const INPUT: &'static str = r#"[({(<(())[]>[[{[]{<()<>>
+    const INPUT: &str = r#"[({(<(())[]>[[{[]{<()<>>
 [(()[<>])]({[<{<<[]>>(
 {([(<{}[<>[]}>{[]{[(<()>
 (((({<>}<{<{<>}{[]{[]{}
