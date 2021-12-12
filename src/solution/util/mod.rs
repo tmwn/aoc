@@ -1,1 +1,1 @@
-pub mod grid;
+pub(crate) mod grid;

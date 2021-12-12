@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use aoc::{client, solution::y2021::solve};
+use aoc::{client, solution::solve};
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
@@ -42,7 +42,7 @@ async fn main() -> Result<(), anyhow::Error> {
             } else {
                 input = client::client().await?.get(year, day).await?;
             }
-            let res = solve(input.trim(), day, large)?;
+            let res = solve(input.trim(), year, day, large)?;
             println!("{}", res)
         }
     }
