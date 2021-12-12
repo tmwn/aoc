@@ -35,13 +35,14 @@ macro_rules! days {
         )*
         type Solve = Box<dyn Fn(&str)->String>;
         pub (crate) fn solve(input: &str, day: i32, large: bool) -> anyhow::Result<String> {
-            let mut solvers: Vec<(Solve, Solve)> = vec![];
-            $(
-                solvers.push((
+            let solvers: Vec<(Solve, Solve)> = vec![
+                $(
+                (
                     Box::new(|input|$id::small(super::parse(input)).to_string()),
                     Box::new(|input|$id::large(super::parse(input)).to_string()),
-                ));
-            )*
+                ),
+                )*
+            ];
 
             Ok(match large {
                 false => solvers[(day-1) as usize].0(input),
@@ -81,6 +82,6 @@ mod tests {
     use super::*;
     #[test]
     fn error() {
-        assert_eq!(solve("", 0, 0, false).is_err(), true);
+        assert!(solve("", 0, 0, false).is_err());
     }
 }
