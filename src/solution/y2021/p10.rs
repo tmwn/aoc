@@ -64,7 +64,7 @@ pub fn large(a: Vec<String>) -> i64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::solution::solve;
+    use super::super::solve;
 
     const INPUT: &str = r#"[({(<(())[]>[[{[]{<()<>>
 [(()[<>])]({[<{<<[]>>(

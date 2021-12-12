@@ -1,4 +1,4 @@
-use super::Parse;
+use super::super::Parse;
 
 pub fn small(input: Input) -> i64 {
     minimize(|m| {
@@ -56,7 +56,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::solution::solve;
+    use super::super::solve;
 
     const INPUT: &str = r#"16,1,2,0,4,2,7,1,2,14
 "#;

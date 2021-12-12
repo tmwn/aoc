@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use ac2021::{client, solution::solve};
+use aoc::{client, solution::y2021::solve};
 use structopt::StructOpt;
 
 #[derive(StructOpt)]

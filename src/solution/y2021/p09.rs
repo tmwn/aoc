@@ -1,4 +1,4 @@
-use super::{util::grid::Grid, Parse};
+use super::{super::Parse, util::grid::Grid};
 
 pub fn small(cave: Cave) -> i32 {
     let h = cave.0.len();
@@ -79,7 +79,7 @@ impl Parse for Cave {
 
 #[cfg(test)]
 mod tests {
-    use crate::solution::solve;
+    use super::super::solve;
 
     const INPUT: &str = r#"2199943210
 3987894921

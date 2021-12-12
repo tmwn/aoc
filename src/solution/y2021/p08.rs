@@ -75,7 +75,7 @@ impl FromStr for Line {
 
 #[cfg(test)]
 mod tests {
-    use crate::solution::solve;
+    use super::super::solve;
 
     const INPUT: &str = r#"be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
 edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc

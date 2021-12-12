@@ -1,4 +1,4 @@
-use super::Parse;
+use super::super::Parse;
 
 pub fn small(mut p: Problem) -> usize {
     for o in p.order.iter() {

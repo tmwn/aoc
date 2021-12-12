@@ -88,7 +88,7 @@ impl FromStr for Point {
 
 #[cfg(test)]
 mod tests {
-    use crate::solution::solve;
+    use super::super::solve;
 
     #[test]
     fn small() {

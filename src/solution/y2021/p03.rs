@@ -49,7 +49,7 @@ fn take(a: Vec<String>, i: usize, majority: bool) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::solution::solve;
+    use super::super::solve;
 
     #[test]
     fn large() {

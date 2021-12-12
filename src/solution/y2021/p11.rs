@@ -51,7 +51,7 @@ fn increment(a: &mut Grid<i32>, i: usize, j: usize) {
 
 #[cfg(test)]
 mod tests {
-    use crate::solution::solve;
+    use super::super::solve;
 
     const INPUT: &str = r#"5483143223
 2745854711
