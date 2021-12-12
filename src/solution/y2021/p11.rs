@@ -1,4 +1,4 @@
-use super::util::grid::Grid;
+use crate::solution::util::grid::Grid;
 
 pub fn small(mut a: Grid<i32>) -> i32 {
     let mut res = 0;

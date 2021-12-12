@@ -1,4 +1,4 @@
-use super::{super::Parse, util::grid::Grid};
+use super::{super::util::grid::Grid, super::Parse};
 
 pub fn small(cave: Cave) -> i32 {
     let h = cave.0.len();

@@ -1,3 +1,5 @@
+mod util;
+
 pub mod y2021;
 
 pub fn parse<S: Parse>(s: &str) -> S {

@@ -1,5 +1,3 @@
-mod util;
-
 macro_rules! gen_solve {
     (
         $($id:ident),*
