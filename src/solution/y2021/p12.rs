@@ -2,27 +2,32 @@ use std::collections::HashMap;
 
 use crate::solution::util::graph;
 
-type Graph = graph::Graph<String, String>;
+type Graph<'a> = graph::Graph<&'a str, &'a str>;
 pub fn small(a: Vec<String>) -> i32 {
-    let g = graph(a);
-    dfs(&g, "start", &mut HashMap::new(), true)
+    let g = graph(&a);
+    dfs(&g, &"start", &mut HashMap::new(), true)
 }
 
 pub fn large(a: Vec<String>) -> i32 {
-    let g = graph(a);
-    dfs(&g, "start", &mut HashMap::new(), false)
+    let g = graph(&a);
+    dfs(&g, &"start", &mut HashMap::new(), false)
 }
 
-fn graph(a: Vec<String>) -> Graph {
+fn graph<'arena>(a: &'arena Vec<String>) -> Graph<'arena> {
     let mut graph = Graph::new();
     for x in a {
-        let mut ss = x.split('-').map(ToOwned::to_owned);
+        let mut ss = x.split('-');
         graph.insert_both(ss.next().unwrap(), ss.next().unwrap());
     }
     graph
 }
 
-fn dfs(graph: &Graph, cur: &str, visited: &mut HashMap<String, i32>, mut twice: bool) -> i32 {
+fn dfs<'arena>(
+    graph: &'arena Graph,
+    cur: &'arena str,
+    visited: &mut HashMap<&'arena str, i32>,
+    mut twice: bool,
+) -> i32 {
     if cur == "end" {
         return 1;
     }
@@ -33,12 +38,12 @@ fn dfs(graph: &Graph, cur: &str, visited: &mut HashMap<String, i32>, mut twice: 
         }
         twice = true;
     }
-    *visited.entry(cur.to_string()).or_default() += 1;
+    *visited.entry(cur).or_default() += 1;
     let mut res = 0;
-    for nxt in graph.edges(cur).unwrap() {
+    for nxt in graph.edges(&cur).unwrap() {
         res += dfs(graph, nxt, visited, twice);
     }
-    *visited.entry(cur.to_string()).or_default() -= 1;
+    *visited.entry(cur).or_default() -= 1;
     res
 }
 
