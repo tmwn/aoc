@@ -9,6 +9,7 @@ dependencies = [
  "actix-rt",
  "anyhow",
  "itertools",
+ "once_cell",
  "reqwest",
  "rpassword",
  "scraper",
