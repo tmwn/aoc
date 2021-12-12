@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 mod util;
 
 macro_rules! years {
@@ -7,22 +9,22 @@ macro_rules! years {
         $(
             mod $id;
         )*
+
         pub fn solve(input: &str, year: i32, day: i32, large: bool) -> anyhow::Result<String> {
-            let solvers = std::collections::HashMap::from([
-                $(
-                  ($year, $id::solve)
-                )*
-            ]);
+            type Solve = Box<dyn Fn(&str, i32, bool) -> anyhow::Result<String>>;
+            let mut solvers: HashMap<i32, Solve> = HashMap::new();
+            $(
+                solvers.insert($year, Box::new($id::solve));
+            )*
+
             solvers
                 .get(&year)
-                .ok_or_else(|| anyhow::anyhow!("not found {}", year))?(
-                input, day, large,
-            )
+                .ok_or_else(|| anyhow::anyhow!("not found {}", year))?(input, day, large)
         }
     }
 }
 
-years!(2021, y2021);
+years!(2020, y2020; 2021, y2021);
 
 macro_rules! days {
     (
