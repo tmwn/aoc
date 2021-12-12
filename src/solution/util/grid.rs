@@ -64,8 +64,7 @@ impl<S> Grid<S> {
         ds.filter_map(move |d| {
             let x = i as isize + d.0;
             let y = j as isize + d.1;
-            self.get(x, y)
-                .and_then(|v| Some((x as usize, y as usize, v)))
+            self.get(x, y).map(|v| (x as usize, y as usize, v))
         })
     }
 }

@@ -10,10 +10,14 @@ macro_rules! years {
         pub fn solve(input: &str, year: i32, day: i32, large: bool) -> anyhow::Result<String> {
             let solvers = std::collections::HashMap::from([
                 $(
-                  ($year, Box::new(|input, day, large|$id::solve(input, day, large)))
+                  ($year, $id::solve)
                 )*
             ]);
-            solvers.get(&year).unwrap()(input, day, large)
+            solvers
+                .get(&year)
+                .ok_or_else(|| anyhow::anyhow!("not found {}", year))?(
+                input, day, large,
+            )
         }
     }
 }
@@ -67,5 +71,14 @@ where
 impl Parse for String {
     fn parse(s: &str) -> Self {
         s.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn error() {
+        assert_eq!(solve("", 0, 0, false).is_err(), true);
     }
 }
