@@ -10,7 +10,7 @@ impl<I: FromStr> FromStr for Point<I> {
     type Err = I::Err;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut ss = s.split(",").map(|x| x.parse());
+        let mut ss = s.split(',').map(|x| x.parse());
         let x = ss.next().unwrap()?;
         let y = ss.next().unwrap()?;
         Ok(Self { x, y })

@@ -5,15 +5,15 @@ use crate::solution::util::graph;
 type Graph<'a> = graph::Graph<&'a str, &'a str>;
 pub fn small(a: Vec<String>) -> i32 {
     let g = graph(&a);
-    dfs(&g, &"start", &mut HashMap::new(), true)
+    dfs(&g, "start", &mut HashMap::new(), true)
 }
 
 pub fn large(a: Vec<String>) -> i32 {
     let g = graph(&a);
-    dfs(&g, &"start", &mut HashMap::new(), false)
+    dfs(&g, "start", &mut HashMap::new(), false)
 }
 
-fn graph<'arena>(a: &'arena Vec<String>) -> Graph<'arena> {
+fn graph(a: &[String]) -> Graph<'_> {
     let mut graph = Graph::new();
     for x in a {
         let mut ss = x.split('-');
