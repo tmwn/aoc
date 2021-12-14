@@ -17,7 +17,7 @@ pub fn solve((s, rules): (String, Vec<Rule>), step: usize) -> i64 {
         cs.push(r.1);
         cs.push(r.2);
     }
-    cs.sort();
+    cs.sort_unstable();
     cs.dedup();
 
     let n = cs.len();
