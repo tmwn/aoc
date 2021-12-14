@@ -77,6 +77,17 @@ impl Parse for String {
     }
 }
 
+impl<T1, T2> Parse for (T1, T2)
+where
+    T1: Parse,
+    T2: Parse,
+{
+    fn parse(s: &str) -> Self {
+        let (s1, s2) = s.split_once("\n\n").unwrap();
+        (T1::parse(s1.trim()), T2::parse(s2.trim()))
+    }
+}
+
 macro_rules! aoc_test {
     ($year: literal, $day: literal, $input: literal, $small: literal $(,$large: literal)?) => {
         #[cfg(test)]
