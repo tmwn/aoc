@@ -77,6 +77,32 @@ impl Parse for String {
     }
 }
 
+macro_rules! aoc_test {
+    ($year: literal, $day: literal, $input: literal, $small: literal $(,$large: literal)?) => {
+        #[cfg(test)]
+        mod tests {
+            const INPUT: &str = $input;
+            #[test]
+            fn small() {
+                assert_eq!(
+                    crate::solution::solve(INPUT, $year, $day, false).unwrap(),
+                    $small.to_string()
+                );
+            }
+            $(
+                #[test]
+                fn large() {
+                    assert_eq!(
+                        crate::solution::solve(INPUT, $year, $day, true).unwrap(),
+                        $large.to_string()
+                    );
+                }
+            )?
+        }
+    };
+}
+pub(crate) use aoc_test;
+
 #[cfg(test)]
 mod tests {
     use super::*;
