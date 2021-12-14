@@ -1,10 +1,6 @@
 use std::str::FromStr;
 
-use crate::solution::{
-    parse,
-    util::matrix::{self, Matrix},
-    Parse,
-};
+use crate::solution::util::matrix::{self, Matrix};
 
 pub fn small(p: (String, Vec<Rule>)) -> i64 {
     solve(p, 10)
@@ -53,23 +49,6 @@ pub fn solve((s, rules): (String, Vec<Rule>), step: usize) -> i64 {
         .iter()
         .fold(i64::MAX, |m, x| if *x == 0 { m } else { m.min(*x) });
     max_cnt - min_cnt
-}
-
-pub struct Problem {
-    s: String,
-    rules: Vec<Rule>,
-}
-
-impl Parse for Problem {
-    fn parse(s: &str) -> Self {
-        let mut ss = s.split("\n\n");
-        let s = ss.next().unwrap().trim();
-        let rules = parse(ss.next().unwrap().trim());
-        Self {
-            s: s.to_string(),
-            rules,
-        }
-    }
 }
 
 #[derive(Debug)]
