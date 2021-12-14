@@ -1,15 +1,15 @@
 use std::str::FromStr;
 
-use crate::solution::{aoc_test, parse, util::point::Point, Parse};
+use crate::solution::{aoc_test, util::point::Point};
 
-pub fn small(Problem(mut ps, instrs): Problem) -> usize {
+pub fn small((mut ps, instrs): (Vec<Point<i32>>, Vec<Instr>)) -> usize {
     fold(&mut ps, &instrs[0]);
     ps.sort();
     ps.dedup();
     ps.len()
 }
 
-pub fn large(Problem(mut ps, instrs): Problem) -> String {
+pub fn large((mut ps, instrs): (Vec<Point<i32>>, Vec<Instr>)) -> String {
     for i in instrs {
         fold(&mut ps, &i);
     }
@@ -42,16 +42,7 @@ fn fold(ps: &mut Vec<Point<i32>>, instr: &Instr) {
     }
 }
 
-pub struct Problem(Vec<Point<i32>>, Vec<Instr>);
-
-impl Parse for Problem {
-    fn parse(s: &str) -> Self {
-        let ss: Vec<_> = s.split("\n\n").collect();
-        Problem(parse(ss[0]), parse(ss[1]))
-    }
-}
-
-struct Instr {
+pub struct Instr {
     x: bool,
     val: i32,
 }
