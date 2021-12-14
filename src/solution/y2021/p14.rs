@@ -10,8 +10,8 @@ pub fn large(p: (String, Vec<Rule>)) -> i64 {
     solve(p, 40)
 }
 
-pub fn solve((s, rules): (String, Vec<Rule>), step: usize) -> i64 {
-    let mut cs: Vec<u8> = s.as_bytes().clone().into();
+pub fn solve((ps, rules): (String, Vec<Rule>), step: usize) -> i64 {
+    let mut cs: Vec<u8> = ps.clone().into();
     for r in &rules {
         cs.push(r.0);
         cs.push(r.1);
@@ -24,9 +24,9 @@ pub fn solve((s, rules): (String, Vec<Rule>), step: usize) -> i64 {
 
     let mut mat: Matrix<i64> = matrix::new(n * n, n * n);
     let mut vec: Vec<i64> = vec![0; n * n];
-    for i in 1..s.len() {
-        let a = cs.binary_search(&s.as_bytes()[i - 1]).unwrap();
-        let b = cs.binary_search(&s.as_bytes()[i]).unwrap();
+    for i in 1..ps.len() {
+        let a = cs.binary_search(&ps.as_bytes()[i - 1]).unwrap();
+        let b = cs.binary_search(&ps.as_bytes()[i]).unwrap();
         vec[a * n + b] += 1;
     }
 
@@ -43,7 +43,7 @@ pub fn solve((s, rules): (String, Vec<Rule>), step: usize) -> i64 {
     for i in 0..v.len() {
         cnt[i / n] += v[i];
     }
-    cnt[cs.binary_search(&s.as_bytes()[s.len() - 1]).unwrap()] += 1;
+    cnt[cs.binary_search(&ps.as_bytes()[ps.len() - 1]).unwrap()] += 1;
     let max_cnt = cnt.iter().fold(0, |m, x| m.max(*x));
     let min_cnt = cnt
         .iter()
