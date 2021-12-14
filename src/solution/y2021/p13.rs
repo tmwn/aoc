@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::solution::{parse, util::point::Point, Parse};
+use crate::solution::{aoc_test, parse, util::point::Point, Parse};
 
 pub fn small(Problem(mut ps, instrs): Problem) -> usize {
     fold(&mut ps, &instrs[0]);
@@ -67,11 +67,10 @@ impl FromStr for Instr {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::solution::solve;
-
-    const INPUT: &str = r#"6,10
+aoc_test!(
+    2021,
+    13,
+    r#"6,10
 0,14
 9,10
 0,3
@@ -91,20 +90,11 @@ mod tests {
 9,0
 
 fold along y=7
-fold along x=5"#;
-    #[test]
-    fn small() {
-        assert_eq!(solve(INPUT, 2021, 13, false).unwrap(), "17");
-    }
-    #[test]
-    fn large() {
-        assert_eq!(
-            solve(INPUT, 2021, 13, true).unwrap(),
-            r#"#####
+fold along x=5"#,
+    17,
+    r#"#####
 #...#
 #...#
 #...#
 #####"#
-        );
-    }
-}
+);

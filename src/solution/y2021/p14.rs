@@ -122,7 +122,7 @@ impl FromStr for Rule {
     }
 }
 
-super::super::aoc_test!(
+crate::solution::aoc_test!(
     2021,
     14,
     r"NNCB
