@@ -12,7 +12,8 @@ pub fn small((mut ps, instrs): Tuple<Vec<Point<i32>>, Vec<Instr>>) -> usize {
     ps.len()
 }
 
-pub fn large((mut ps, instrs): (Vec<Point<i32>>, Vec<Instr>)) -> String {
+#[aocio]
+pub fn large((mut ps, instrs): Tuple<Vec<Point<i32>>, Vec<Instr>>) -> String {
     for i in instrs {
         fold(&mut ps, &i);
     }

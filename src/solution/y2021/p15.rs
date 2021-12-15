@@ -1,11 +1,11 @@
 use std::collections::BTreeSet;
 
-use crate::solution::{
-    aoc_test,
-    util::{self, grid::Grid},
-};
+use aocio::aocio;
 
-pub fn small(grid: Grid<i32>) -> i32 {
+use crate::solution::{aoc_test, util};
+
+#[aocio]
+pub fn small(grid: Vec<Vec<i32, "">>) -> i32 {
     let h = grid.len();
     let w = grid[0].len();
     let mut visited = vec![vec![false; w]; h];
@@ -28,7 +28,8 @@ pub fn small(grid: Grid<i32>) -> i32 {
     panic!()
 }
 
-pub fn large(grid: Grid<i32>) -> i32 {
+#[aocio]
+pub fn large(grid: Vec<Vec<i32, "">>) -> i32 {
     let h = grid.len();
     let w = grid[0].len();
     let mut visited = BTreeSet::new();

@@ -1,12 +1,16 @@
 use std::str::FromStr;
 
+use aocio::aocio;
+
 use crate::solution::util::matrix::{self, Matrix};
 
-pub fn small(p: (String, Vec<Rule>)) -> i64 {
+#[aocio]
+pub fn small(p: Tuple<String, Vec<Rule>>) -> i64 {
     solve(p, 10)
 }
 
-pub fn large(p: (String, Vec<Rule>)) -> i64 {
+#[aocio]
+pub fn large(p: Tuple<String, Vec<Rule>>) -> i64 {
     solve(p, 40)
 }
 
