@@ -1,33 +1,35 @@
+use aocio::aocio;
+
 use crate::solution::util;
 
-use super::{super::util::grid::Grid, super::Parse};
-
-pub fn small(cave: Cave) -> i32 {
-    let h = cave.0.len();
-    let w = cave.0[0].len();
+#[aocio]
+pub fn small(cave: Vec<Vec<i32, "">>) -> i32 {
+    let h = cave.len();
+    let w = cave[0].len();
 
     let mut res = 0;
     for i in 0..h {
         for j in 0..w {
-            if cave.low_point(i, j) {
-                res += cave.0[i][j] + 1;
+            if low_point(&cave, i, j) {
+                res += cave[i][j] + 1;
             }
         }
     }
     res
 }
 
-pub fn large(cave: Cave) -> i32 {
-    let h = cave.0.len();
-    let w = cave.0[0].len();
+#[aocio]
+pub fn large(cave: Vec<Vec<i32, "">>) -> i32 {
+    let h = cave.len();
+    let w = cave[0].len();
 
     let mut count = vec![vec![0; w]; h];
     for i in 0..h {
         for j in 0..w {
-            if cave.0[i][j] == 9 {
+            if cave[i][j] == 9 {
                 continue;
             }
-            let (x, y) = cave.sink(i, j);
+            let (x, y) = sink(&cave, i, j);
             count[x][y] += 1;
         }
     }
@@ -47,36 +49,26 @@ pub fn large(cave: Cave) -> i32 {
     res
 }
 
-pub struct Cave(Grid<i32>);
-
-impl Cave {
-    fn sink(&self, mut i: usize, mut j: usize) -> (usize, usize) {
-        while !self.low_point(i, j) {
-            for (x, y) in util::grid::neighbors(i, j, self.0.len(), self.0[0].len()) {
-                if self.0[x][y] < self.0[i][j] {
-                    i = x;
-                    j = y;
-                }
+fn sink(cave: &Vec<Vec<i32>>, mut i: usize, mut j: usize) -> (usize, usize) {
+    while !low_point(cave, i, j) {
+        for (x, y) in util::grid::neighbors(i, j, cave.len(), cave[0].len()) {
+            if cave[x][y] < cave[i][j] {
+                i = x;
+                j = y;
             }
         }
-        (i, j)
     }
-
-    fn low_point(&self, i: usize, j: usize) -> bool {
-        let cur = self.0[i][j];
-        for (x, y) in util::grid::neighbors(i, j, self.0.len(), self.0[0].len()) {
-            if cur >= self.0[x][y] {
-                return false;
-            }
-        }
-        true
-    }
+    (i, j)
 }
 
-impl Parse for Cave {
-    fn parse(s: &str) -> Self {
-        Cave(Grid::parse(s))
+fn low_point(cave: &Vec<Vec<i32>>, i: usize, j: usize) -> bool {
+    let cur = cave[i][j];
+    for (x, y) in util::grid::neighbors(i, j, cave.len(), cave[0].len()) {
+        if cur >= cave[x][y] {
+            return false;
+        }
     }
+    true
 }
 
 #[cfg(test)]

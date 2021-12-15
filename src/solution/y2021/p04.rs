@@ -1,10 +1,14 @@
+use aocio::aocio;
+
 use crate::solution::aoc_test;
 
-use super::super::Parse;
-
-pub fn small(mut p: Problem) -> usize {
-    for o in p.order.iter() {
-        for c in p.cards.iter_mut() {
+#[aocio]
+pub fn small(
+    (order, cards): Tuple<Vec<usize, ",">, "\n\n", Vec<Vec<Vec<usize, " ">>, "\n\n">>,
+) -> usize {
+    let mut cards: Vec<_> = cards.into_iter().map(|card| Card::new(card)).collect();
+    for o in order.iter() {
+        for c in cards.iter_mut() {
             c.set(*o);
             if c.bingo() {
                 return c.score() * o;
@@ -14,12 +18,17 @@ pub fn small(mut p: Problem) -> usize {
     panic!("should not reach")
 }
 
-pub fn large(mut p: Problem) -> usize {
-    let n = p.cards.len();
+#[aocio]
+pub fn large(
+    (order, cards): Tuple<Vec<usize, ",">, "\n\n", Vec<Vec<Vec<usize, " ">>, "\n\n">>,
+) -> usize {
+    let mut cards: Vec<_> = cards.into_iter().map(|card| Card::new(card)).collect();
+
+    let n = cards.len();
     let mut count = 0;
     let mut done = vec![false; n];
-    for o in p.order.iter() {
-        for (i, c) in p.cards.iter_mut().enumerate() {
+    for o in order.iter() {
+        for (i, c) in cards.iter_mut().enumerate() {
             if done[i] {
                 continue;
             }
@@ -36,44 +45,17 @@ pub fn large(mut p: Problem) -> usize {
     panic!("shoud not reach")
 }
 
-pub struct Problem {
-    order: Vec<usize>,
-    cards: Vec<Card>,
-}
-
-impl Parse for Problem {
-    fn parse(s: &str) -> Self {
-        let mut it = s.split_ascii_whitespace();
-        let order = it
-            .next()
-            .unwrap()
-            .split(',')
-            .map(|s| s.parse().unwrap())
-            .collect();
-        let mut cards = vec![];
-        while let Some(first) = it.next() {
-            let mut board = Board::default();
-            board[0][0] = first.parse().unwrap();
-            for i in 1..25 {
-                board[i / 5][i % 5] = it.next().unwrap().parse().unwrap();
-            }
-            cards.push(Card::new(board));
-        }
-        Self { order, cards }
-    }
-}
-
 type Board<S> = [[S; 5]; 5];
 
 #[derive(Default)]
 struct Card {
-    board: Board<usize>,
+    board: Vec<Vec<usize>>,
     rev: Vec<Option<(usize, usize)>>,
     called: Board<bool>,
 }
 
 impl Card {
-    fn new(board: Board<usize>) -> Card {
+    fn new(board: Vec<Vec<usize>>) -> Card {
         let mut rev = vec![None; 100];
         for i in 0..5 {
             for j in 0..5 {

@@ -1,3 +1,8 @@
+use aocio::aocio;
+
+use crate::solution::aoc_test;
+
+#[aocio]
 pub fn small(a: Vec<usize>) -> usize {
     let mut b = vec![false; 2021];
     for x in a {
@@ -11,6 +16,7 @@ pub fn small(a: Vec<usize>) -> usize {
     0
 }
 
+#[aocio]
 pub fn large(a: Vec<usize>) -> usize {
     let mut b = vec![false; 2021];
     for x in a {
@@ -25,3 +31,20 @@ pub fn large(a: Vec<usize>) -> usize {
     }
     0
 }
+
+aoc_test!(
+    2021,
+    1,
+    "199
+200
+208
+210
+200
+207
+240
+269
+260
+263",
+    7,
+    5
+);

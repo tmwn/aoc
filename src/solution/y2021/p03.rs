@@ -1,3 +1,6 @@
+use aocio::aocio;
+
+#[aocio]
 pub fn small(a: Vec<String>) -> i32 {
     let mut v = vec![0; a[0].len()];
     for s in a.iter() {
@@ -19,6 +22,7 @@ pub fn small(a: Vec<String>) -> i32 {
     g * e
 }
 
+#[aocio]
 pub fn large(a: Vec<String>) -> i32 {
     let n = a[0].len();
     let mut gs = a.clone();

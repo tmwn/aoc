@@ -1,52 +1,49 @@
-use std::str::FromStr;
+use aocio::aocio;
 
-pub enum Instr {
-    Down(i32),
-    Forward(i32),
-    Up(i32),
-}
+use crate::solution::aoc_test;
 
-impl FromStr for Instr {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut ss = s.split(' ');
-        let cmd = ss.next().unwrap();
-        let n: i32 = ss.next().unwrap().parse()?;
-        Ok(match cmd {
-            "down" => Self::Down(n),
-            "forward" => Self::Forward(n),
-            "up" => Self::Up(n),
-            _ => anyhow::bail!("{} not known", cmd),
-        })
-    }
-}
-
-pub fn small(a: Vec<Instr>) -> i32 {
+#[aocio]
+pub fn small(a: Vec<Tuple<String, " ", i32>>) -> i32 {
     let (mut x, mut y) = (0i32, 0i32);
-    for i in a {
-        match i {
-            Instr::Down(k) => x += k,
-            Instr::Forward(k) => y += k,
-            Instr::Up(k) => x -= k,
+    for (s, k) in a {
+        match s.as_ref() {
+            "forward" => y += k,
+            "down" => x += k,
+            "up" => x -= k,
+            _ => panic!(),
         }
     }
     x * y
 }
 
-pub fn large(a: Vec<Instr>) -> i32 {
+#[aocio]
+pub fn large(a: Vec<Tuple<String, " ", i32>>) -> i32 {
     let mut aim = 0;
     let mut depth = 0;
     let mut pos = 0;
-    for i in a {
-        match i {
-            Instr::Down(k) => aim += k,
-            Instr::Up(k) => aim -= k,
-            Instr::Forward(k) => {
+    for (s, k) in a {
+        match s.as_ref() {
+            "down" => aim += k,
+            "up" => aim -= k,
+            "forward" => {
                 pos += k;
                 depth += k * aim
             }
+            _ => panic!(),
         }
     }
     pos * depth
 }
+
+aoc_test!(
+    2021,
+    2,
+    "forward 5
+down 5
+forward 8
+up 3
+down 8
+forward 2",
+    150,
+    900
+);
