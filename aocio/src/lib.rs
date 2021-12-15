@@ -80,11 +80,6 @@ impl<'a> AOCType<'a> {
                         ))
                     }
                 }
-                impl super::super::Parse for #wrapper {
-                    fn parse(s: &str) -> Self {
-                        s.parse().unwrap()
-                    }
-                }
             );
         }
         match self {

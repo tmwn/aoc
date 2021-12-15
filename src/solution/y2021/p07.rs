@@ -1,7 +1,5 @@
 use aocio::aocio;
 
-use super::super::Parse;
-
 #[aocio]
 pub fn small(input: Vec<i32, ",">) -> i64 {
     minimize(|m| {

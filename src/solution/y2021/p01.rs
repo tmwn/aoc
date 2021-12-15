@@ -1,3 +1,6 @@
+use aocio::aocio;
+
+#[aocio]
 pub fn small(a: Vec<i32>) -> i32 {
     let n = a.len();
     let mut res = 0;
@@ -9,6 +12,7 @@ pub fn small(a: Vec<i32>) -> i32 {
     res
 }
 
+#[aocio]
 pub fn large(a: Vec<i32>) -> i32 {
     let n = a.len();
     let mut res = 0;

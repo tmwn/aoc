@@ -38,8 +38,8 @@ macro_rules! days {
             let solvers: Vec<(Solve, Solve)> = vec![
                 $(
                 (
-                    Box::new(|input|$id::small(super::parse(input)).to_string()),
-                    Box::new(|input|$id::large(super::parse(input)).to_string()),
+                    Box::new(|input|$id::small(input.parse().unwrap()).to_string()),
+                    Box::new(|input|$id::large(input.parse().unwrap()).to_string()),
                 ),
                 )*
             ];
@@ -52,41 +52,6 @@ macro_rules! days {
     };
 }
 pub(crate) use days;
-
-pub fn parse<S: Parse>(s: &str) -> S {
-    S::parse(s)
-}
-
-pub trait Parse {
-    fn parse(s: &str) -> Self;
-}
-
-impl<S> Parse for Vec<S>
-where
-    S: std::str::FromStr,
-    S::Err: std::fmt::Debug,
-{
-    fn parse(s: &str) -> Self {
-        s.split('\n').map(|s| s.parse::<S>().unwrap()).collect()
-    }
-}
-
-impl Parse for String {
-    fn parse(s: &str) -> Self {
-        s.to_string()
-    }
-}
-
-impl<T1, T2> Parse for (T1, T2)
-where
-    T1: Parse,
-    T2: Parse,
-{
-    fn parse(s: &str) -> Self {
-        let (s1, s2) = s.split_once("\n\n").unwrap();
-        (T1::parse(s1.trim()), T2::parse(s2.trim()))
-    }
-}
 
 macro_rules! aoc_test {
     ($year: literal, $day: literal, $input: literal, $small: literal $(,$large: literal)?) => {

@@ -1,7 +1,5 @@
 use std::ops::{Deref, DerefMut};
 
-use crate::solution::Parse;
-
 pub const DIR4: [(isize, isize); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
 
 pub const DIR8: [(isize, isize); 8] = [
@@ -28,17 +26,6 @@ impl<S> Deref for Grid<S> {
 impl<S> DerefMut for Grid<S> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
-    }
-}
-
-impl Parse for Grid<i32> {
-    fn parse(s: &str) -> Self {
-        Self(
-            s.trim()
-                .split('\n')
-                .map(|s| s.bytes().map(|x| (x - b'0') as i32).collect())
-                .collect(),
-        )
     }
 }
 
