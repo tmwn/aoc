@@ -1,12 +1,11 @@
 use aocio::aocio;
 use itertools::Itertools;
-use std::str::FromStr;
 
 #[aocio]
-pub fn small(a: Vec<Line>) -> i32 {
+pub fn small(a: Vec<Tuple<Vec<String, " ">, "|", Vec<String, " ">>>) -> i32 {
     let mut res = 0;
-    for line in a {
-        for o in line.output {
+    for (_, output) in a {
+        for o in output {
             match o.len() {
                 2 | 3 | 4 | 7 => res += 1,
                 _ => (),
@@ -17,10 +16,10 @@ pub fn small(a: Vec<Line>) -> i32 {
 }
 
 #[aocio]
-pub fn large(a: Vec<Line>) -> i32 {
+pub fn large(a: Vec<Tuple<Vec<String, " ">, "|", Vec<String, " ">>>) -> i32 {
     let mut res = 0;
-    for line in a {
-        res += solve(line);
+    for (input, output) in a {
+        res += solve(input, output);
     }
     res
 }
@@ -44,36 +43,20 @@ fn get(letters: &str, permutation: &[u8]) -> Option<i32> {
     None
 }
 
-fn solve(line: Line) -> i32 {
+fn solve(input: Vec<String>, output: Vec<String>) -> i32 {
     'outer: for is in (0..7).permutations(7) {
-        for x in line.input.iter() {
+        for x in input.iter() {
             if get(x, &is).is_none() {
                 continue 'outer;
             }
         }
         let mut res = 0;
-        for x in line.output.iter() {
+        for x in output.iter() {
             res = res * 10 + get(x, &is).unwrap();
         }
         return res;
     }
     panic!("no solution")
-}
-
-pub struct Line {
-    input: Vec<String>,
-    output: Vec<String>,
-}
-
-impl FromStr for Line {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let ss: Vec<_> = s.split(" | ").collect();
-        let input = ss[0].split(' ').map(ToOwned::to_owned).collect();
-        let output = ss[1].split(' ').map(ToOwned::to_owned).collect();
-        Ok(Line { input, output })
-    }
 }
 
 #[cfg(test)]
