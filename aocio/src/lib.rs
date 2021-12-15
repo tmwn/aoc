@@ -1,6 +1,6 @@
 extern crate proc_macro;
 use proc_macro::TokenStream;
-use proc_macro2::Ident;
+use proc_macro2::{Ident, Span};
 use quote::quote;
 use syn::{parse_macro_input, ItemFn};
 
@@ -16,13 +16,13 @@ pub fn aocio(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let aoc_ty = parse_ty(ty);
 
-    print!("!!! aoc_ty {:#?}", &aoc_ty);
+    // print!("!!! aoc_ty {:#?}", &aoc_ty);
 
     let wrapper_name = syn::Ident::new(&format!("__Wrap_{}", name), name.span());
 
     let def = aoc_ty.definition(Some(&wrapper_name));
 
-    println!("!!! def = {}", &def);
+    // println!("!!! def = {}", &def);
 
     let output = input.sig.output;
     let block = input.block;
@@ -72,6 +72,7 @@ impl<'a> AOCType<'a> {
             let ty = self.real_type();
             let inner = self.definition(None);
             return quote!(
+                #[allow(non_camel_case_types)]
                 pub struct #wrapper(#ty);
                 impl std::str::FromStr for #wrapper {
                     type Err = String;
@@ -97,22 +98,37 @@ impl<'a> AOCType<'a> {
                 )
             }
             AOCType::Tuple(tps) => {
-                let inner1 = tps[0].ty.definition(None);
-                let inner2 = tps[1].ty.definition(None);
-                let punct = &tps[0].punct;
-                quote!({
-                    let mut ss = s
-                    .trim()
-                    .split_once(#punct).unwrap();
-                    let v1 = {
-                        let s = ss.0;
-                        #inner1
-                    };
-                    let v2 = {
+                let n = tps.len();
+                let names: Vec<_> = (0..n).map(|i| format!("v{}", i)).collect();
+                let idents: Vec<_> = names
+                    .iter()
+                    .map(|x| syn::Ident::new(x, Span::call_site()))
+                    .collect();
+                let inners: Vec<_> = tps.iter().map(|tp| tp.ty.definition(None)).collect();
+                let puncts: Vec<_> = tps.iter().map(|tp| &tp.punct).collect();
+
+                let mut quotes = vec![];
+                for i in 0..(n - 1) {
+                    let ident = &idents[i];
+                    let punct = &puncts[i];
+                    let inner = &inners[i];
+                    let q = quote!(
+                        let ss = s.trim().split_once(#punct).unwrap();
+                        let #ident = {
+                            let s = ss.0;
+                            #inner
+                        };
                         let s = ss.1;
-                        #inner2
-                    };
-                    (v1, v2)
+                    );
+                    quotes.push(q);
+                }
+
+                let ident = &idents[n - 1];
+                let inner = &inners[n - 1];
+                quote!({
+                    #(#quotes)*
+                    let #ident = #inner;
+                    (#(#idents),*)
                 })
             }
             AOCType::Other(_) => {

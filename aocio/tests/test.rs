@@ -30,7 +30,10 @@ fn tuple((x, y): Tuple<i32, "2", i32>) -> usize {
     (x + y) as usize
 }
 
-struct A((i32, i32));
+#[aocio::aocio]
+fn tuple3((x, y, z): Tuple<i32, "2", i32, "4", i32>) -> usize {
+    (x + y + z) as usize
+}
 
 #[test]
 fn test() {
@@ -47,6 +50,11 @@ fn test() {
         3
     );
     assert_eq!(tuple("123".parse().unwrap()), 4);
+}
+
+#[test]
+fn test_tuple3() {
+    assert_eq!(tuple3("12345".parse().unwrap()), 9);
 }
 
 struct VV(Vec<i32>);
