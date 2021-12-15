@@ -1,8 +1,11 @@
 use std::str::FromStr;
 
+use aocio::aocio;
+
 use crate::solution::{aoc_test, util::point::Point};
 
-pub fn small((mut ps, instrs): (Vec<Point<i32>>, Vec<Instr>)) -> usize {
+#[aocio]
+pub fn small((mut ps, instrs): Tuple<Vec<Point<i32>>, Vec<Instr>>) -> usize {
     fold(&mut ps, &instrs[0]);
     ps.sort();
     ps.dedup();

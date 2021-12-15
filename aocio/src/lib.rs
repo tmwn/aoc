@@ -141,7 +141,7 @@ impl<'a> AOCType<'a> {
 }
 
 fn parse_ty<'a>(ty: &'a syn::Type) -> AOCType<'a> {
-    if let Some(vs) = try_inner("Vec", ty) {
+    if let Some(vs) = try_inner("Vec", ty, "\n") {
         if vs.len() == 1 {
             return AOCType::Vec(TypePunct {
                 ty: Box::new(parse_ty(vs[0].0)),
@@ -150,7 +150,7 @@ fn parse_ty<'a>(ty: &'a syn::Type) -> AOCType<'a> {
         } else {
             panic!("Vec bad format {}", vs.len())
         }
-    } else if let Some(vs) = try_inner("Tuple", ty) {
+    } else if let Some(vs) = try_inner("Tuple", ty, "\n\n") {
         return AOCType::Tuple(
             vs.into_iter()
                 .map(|(ty, punct)| TypePunct {
@@ -163,7 +163,11 @@ fn parse_ty<'a>(ty: &'a syn::Type) -> AOCType<'a> {
     AOCType::Other(ty)
 }
 
-fn try_inner<'a>(wrapper: &str, ty: &'a syn::Type) -> Option<Vec<(&'a syn::Type, String)>> {
+fn try_inner<'a>(
+    wrapper: &str,
+    ty: &'a syn::Type,
+    default_sep: &str,
+) -> Option<Vec<(&'a syn::Type, String)>> {
     let tp = if let syn::Type::Path(tp) = ty {
         tp
     } else {
@@ -185,7 +189,7 @@ fn try_inner<'a>(wrapper: &str, ty: &'a syn::Type) -> Option<Vec<(&'a syn::Type,
         match x {
             syn::GenericArgument::Type(ty) => {
                 if let Some(ty) = cur_ty {
-                    res.push((ty, "\n".to_owned()))
+                    res.push((ty, default_sep.to_owned()))
                 }
                 cur_ty = Some(ty);
             }
@@ -203,7 +207,7 @@ fn try_inner<'a>(wrapper: &str, ty: &'a syn::Type) -> Option<Vec<(&'a syn::Type,
         }
     }
     if let Some(cur) = cur_ty {
-        res.push((cur, "\n".to_owned()));
+        res.push((cur, default_sep.to_owned()));
     }
     Some(res)
 }
