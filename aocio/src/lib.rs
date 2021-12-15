@@ -94,7 +94,7 @@ impl<'a> AOCType<'a> {
                     .split(#punct)
                     .filter(|x|!x.trim().is_empty())
                     .map(|s|#inner)
-                    .collect::<Vec<_>>()
+                    .collect()
                 )
             }
             AOCType::Tuple(tps) => {
