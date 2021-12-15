@@ -6,7 +6,7 @@ use crate::solution::aoc_test;
 pub fn small(
     (order, cards): Tuple<Vec<usize, ",">, "\n\n", Vec<Vec<Vec<usize, " ">>, "\n\n">>,
 ) -> usize {
-    let mut cards: Vec<_> = cards.into_iter().map(|card| Card::new(card)).collect();
+    let mut cards: Vec<_> = cards.into_iter().map(Card::new).collect();
     for o in order.iter() {
         for c in cards.iter_mut() {
             c.set(*o);
@@ -22,7 +22,7 @@ pub fn small(
 pub fn large(
     (order, cards): Tuple<Vec<usize, ",">, "\n\n", Vec<Vec<Vec<usize, " ">>, "\n\n">>,
 ) -> usize {
-    let mut cards: Vec<_> = cards.into_iter().map(|card| Card::new(card)).collect();
+    let mut cards: Vec<_> = cards.into_iter().map(Card::new).collect();
 
     let n = cards.len();
     let mut count = 0;

@@ -49,7 +49,7 @@ pub fn large(cave: Vec<Vec<i32, "">>) -> i32 {
     res
 }
 
-fn sink(cave: &Vec<Vec<i32>>, mut i: usize, mut j: usize) -> (usize, usize) {
+fn sink(cave: &[Vec<i32>], mut i: usize, mut j: usize) -> (usize, usize) {
     while !low_point(cave, i, j) {
         for (x, y) in util::grid::neighbors(i, j, cave.len(), cave[0].len()) {
             if cave[x][y] < cave[i][j] {
@@ -61,7 +61,7 @@ fn sink(cave: &Vec<Vec<i32>>, mut i: usize, mut j: usize) -> (usize, usize) {
     (i, j)
 }
 
-fn low_point(cave: &Vec<Vec<i32>>, i: usize, j: usize) -> bool {
+fn low_point(cave: &[Vec<i32>], i: usize, j: usize) -> bool {
     let cur = cave[i][j];
     for (x, y) in util::grid::neighbors(i, j, cave.len(), cave[0].len()) {
         if cur >= cave[x][y] {

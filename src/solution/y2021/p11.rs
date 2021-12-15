@@ -1,6 +1,6 @@
 use aocio::aocio;
 
-use crate::solution::util::grid::{self};
+use crate::solution::util::grid;
 
 #[aocio]
 pub fn small(mut a: Vec<Vec<i32, "">>) -> i32 {
@@ -29,11 +29,11 @@ fn step(a: &mut Grid<i32>) -> i32 {
         }
     }
     let mut res = 0;
-    for i in 0..10 {
-        for j in 0..10 {
-            if a[i][j] >= 10 {
+    for r in a.iter_mut() {
+        for x in r.iter_mut() {
+            if *x >= 10 {
                 res += 1;
-                a[i][j] = 0;
+                *x = 0;
             }
         }
     }
