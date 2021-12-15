@@ -1,6 +1,8 @@
+use aocio::aocio;
 use itertools::Itertools;
 use std::str::FromStr;
 
+#[aocio]
 pub fn small(a: Vec<Line>) -> i32 {
     let mut res = 0;
     for line in a {
@@ -14,6 +16,7 @@ pub fn small(a: Vec<Line>) -> i32 {
     res
 }
 
+#[aocio]
 pub fn large(a: Vec<Line>) -> i32 {
     let mut res = 0;
     for line in a {

@@ -1,9 +1,13 @@
 use std::str::FromStr;
 
+use aocio::aocio;
+
+#[aocio]
 pub fn small(ss: Vec<Segment>) -> i32 {
     solve(ss, false)
 }
 
+#[aocio]
 pub fn large(ss: Vec<Segment>) -> i32 {
     solve(ss, true)
 }

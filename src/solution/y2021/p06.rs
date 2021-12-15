@@ -1,7 +1,11 @@
+use aocio::aocio;
+
+#[aocio]
 pub fn small(input: Vec<String>) -> i64 {
     solve(input, 80)
 }
 
+#[aocio]
 pub fn large(input: Vec<String>) -> i64 {
     solve(input, 256)
 }

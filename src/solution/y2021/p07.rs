@@ -1,37 +1,28 @@
+use aocio::aocio;
+
 use super::super::Parse;
 
-pub fn small(input: Input) -> i64 {
+#[aocio]
+pub fn small(input: Vec<i32, ",">) -> i64 {
     minimize(|m| {
         let mut res = 0;
-        for x in input.0.iter() {
+        for x in input.iter() {
             res += (m - x).abs() as i64
         }
         res
     })
 }
 
-pub fn large(input: Input) -> i64 {
+#[aocio]
+pub fn large(input: Vec<i32, ",">) -> i64 {
     minimize(|m| {
         let mut res = 0;
-        for x in input.0.iter() {
+        for x in input.iter() {
             let d = (m - x).abs() as i64;
             res += d * (d + 1) / 2;
         }
         res
     })
-}
-
-pub struct Input(Vec<i32>);
-
-impl Parse for Input {
-    fn parse(s: &str) -> Self {
-        Input(
-            s.trim()
-                .split(',')
-                .map(|x| x.parse::<i32>().unwrap())
-                .collect::<Vec<_>>(),
-        )
-    }
 }
 
 fn minimize<F>(f: F) -> i64

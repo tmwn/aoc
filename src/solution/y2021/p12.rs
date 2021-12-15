@@ -1,13 +1,18 @@
 use std::collections::HashMap;
 
+use aocio::aocio;
+
 use crate::solution::util::graph;
 
 type Graph<'a> = graph::Graph<&'a str, &'a str>;
+
+#[aocio]
 pub fn small(a: Vec<String>) -> i32 {
     let g = graph(&a);
     dfs(&g, "start", &mut HashMap::new(), true)
 }
 
+#[aocio]
 pub fn large(a: Vec<String>) -> i32 {
     let g = graph(&a);
     dfs(&g, "start", &mut HashMap::new(), false)

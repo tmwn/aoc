@@ -1,6 +1,9 @@
-use crate::solution::util::grid::{self, Grid};
+use aocio::aocio;
 
-pub fn small(mut a: Grid<i32>) -> i32 {
+use crate::solution::util::grid::{self};
+
+#[aocio]
+pub fn small(mut a: Vec<Vec<i32, "">>) -> i32 {
     let mut res = 0;
     for _ in 0..100 {
         res += step(&mut a);
@@ -8,7 +11,8 @@ pub fn small(mut a: Grid<i32>) -> i32 {
     res
 }
 
-pub fn large(mut a: Grid<i32>) -> i32 {
+#[aocio]
+pub fn large(mut a: Vec<Vec<i32, "">>) -> i32 {
     for i in 1.. {
         if step(&mut a) == 100 {
             return i;
@@ -17,6 +21,7 @@ pub fn large(mut a: Grid<i32>) -> i32 {
     panic!()
 }
 
+type Grid<T> = Vec<Vec<T>>;
 fn step(a: &mut Grid<i32>) -> i32 {
     for i in 0..10 {
         for j in 0..10 {

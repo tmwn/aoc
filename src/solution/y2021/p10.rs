@@ -1,3 +1,6 @@
+use aocio::aocio;
+
+#[aocio]
 pub fn small(a: Vec<String>) -> i32 {
     let mut res = 0;
     for line in a {
@@ -40,6 +43,7 @@ fn analyze(line: &str) -> State {
     State::Incomplete(expect)
 }
 
+#[aocio]
 pub fn large(a: Vec<String>) -> i64 {
     let mut scores = vec![];
     for line in a {
