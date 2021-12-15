@@ -2,7 +2,9 @@ use std::ops::{Deref, DerefMut};
 
 use crate::solution::Parse;
 
-const DIR: [(isize, isize); 8] = [
+pub const DIR4: [(isize, isize); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
+
+pub const DIR8: [(isize, isize); 8] = [
     (0, 1),
     (1, 0),
     (0, -1),
@@ -60,11 +62,28 @@ impl<S> Grid<S> {
         j: usize,
         diagonal: bool,
     ) -> impl std::iter::Iterator<Item = (usize, usize, &S)> {
-        let ds = DIR.iter().take(if diagonal { 8 } else { 4 });
+        let ds = DIR8.iter().take(if diagonal { 8 } else { 4 });
         ds.filter_map(move |d| {
             let x = i as isize + d.0;
             let y = j as isize + d.1;
             self.get(x, y).map(|v| (x as usize, y as usize, v))
         })
     }
+}
+
+pub(crate) fn neighbors(
+    x: usize,
+    y: usize,
+    h: usize,
+    w: usize,
+) -> impl std::iter::Iterator<Item = (usize, usize)> {
+    DIR4.iter().filter_map(move |d| {
+        let x = x as isize + d.0;
+        let y = y as isize + d.1;
+        if x >= 0 && y >= 0 && x < h as isize && y < w as isize {
+            Some((x as usize, y as usize))
+        } else {
+            None
+        }
+    })
 }
