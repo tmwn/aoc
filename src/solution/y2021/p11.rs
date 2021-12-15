@@ -1,4 +1,4 @@
-use crate::solution::util::grid::Grid;
+use crate::solution::util::grid::{self, Grid};
 
 pub fn small(mut a: Grid<i32>) -> i32 {
     let mut res = 0;
@@ -40,12 +40,8 @@ fn increment(a: &mut Grid<i32>, i: usize, j: usize) {
     if a[i][j] != 10 {
         return;
     }
-    let ds: Vec<(usize, usize)> = a
-        .enumerate_adjecent(i, j, true)
-        .map(|(i, j, _)| (i, j))
-        .collect();
-    for (i, j) in ds {
-        increment(a, i, j)
+    for (x, y) in grid::neighbors8(i, j, a.len(), a[0].len()) {
+        increment(a, x, y);
     }
 }
 

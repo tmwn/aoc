@@ -21,8 +21,8 @@ pub fn small(grid: Grid<i32>) -> i32 {
         if x == h - 1 && y == w - 1 {
             return -d;
         }
-        for (nx, ny, v) in grid.enumerate_adjecent(x, y, false) {
-            q.push((d - v, nx, ny));
+        for (nx, ny) in util::grid::neighbors(x, y, h, w) {
+            q.push((d - grid[nx][ny], nx, ny));
         }
     }
     panic!()

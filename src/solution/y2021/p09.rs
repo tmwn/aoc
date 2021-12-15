@@ -1,3 +1,5 @@
+use crate::solution::util;
+
 use super::{super::util::grid::Grid, super::Parse};
 
 pub fn small(cave: Cave) -> i32 {
@@ -50,8 +52,8 @@ pub struct Cave(Grid<i32>);
 impl Cave {
     fn sink(&self, mut i: usize, mut j: usize) -> (usize, usize) {
         while !self.low_point(i, j) {
-            for (x, y, v) in self.0.enumerate_adjecent(i, j, false) {
-                if *v < self.0[i][j] {
+            for (x, y) in util::grid::neighbors(i, j, self.0.len(), self.0[0].len()) {
+                if self.0[x][y] < self.0[i][j] {
                     i = x;
                     j = y;
                 }
@@ -62,8 +64,8 @@ impl Cave {
 
     fn low_point(&self, i: usize, j: usize) -> bool {
         let cur = self.0[i][j];
-        for v in self.0.iter_adjecent(i, j, false) {
-            if cur >= *v {
+        for (x, y) in util::grid::neighbors(i, j, self.0.len(), self.0[0].len()) {
+            if cur >= self.0[x][y] {
                 return false;
             }
         }
