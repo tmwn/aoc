@@ -1,6 +1,6 @@
 #[aocio::aocio]
 fn solve2021_04(
-    (order, cards): Tuple<Vec<i32, ",">, "\n\n", Vec<Vec<Vec<i32, " ">, "\n">, "\n\n">>,
+    (order, cards): Tuple<Vec<i32, ",">, "\n\n", Vec<Vec<Vec<i32, " ">>, "\n\n">>,
 ) -> (usize, usize, usize, usize) {
     println!("!! order = {:#?}", order);
     println!("!! cards = {:#?}", cards);

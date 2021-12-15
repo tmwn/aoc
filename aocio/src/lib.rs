@@ -10,24 +10,21 @@ pub fn aocio(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let name = &input.sig.ident;
 
     let (pat, ty) = match &input.sig.inputs[0] {
-        syn::FnArg::Receiver(_) => panic!(""),
+        syn::FnArg::Receiver(_) => panic!("Receive type not supported"),
         syn::FnArg::Typed(x) => (&x.pat, &x.ty),
     };
 
     let aoc_ty = parse_ty(ty);
-
-    // print!("!!! aoc_ty {:#?}", &aoc_ty);
-
     let wrapper_name = syn::Ident::new(&format!("__Wrap_{}", name), name.span());
 
     let def = aoc_ty.definition(Some(&wrapper_name));
 
-    // println!("!!! def = {}", &def);
-
     let output = input.sig.output;
     let block = input.block;
+
+    let vis = input.vis;
     let q = quote! {
-        fn #name(#wrapper_name(#pat): #wrapper_name) #output #block
+        #vis fn #name(#wrapper_name(#pat): #wrapper_name) #output #block
         #def
     };
     q.into()

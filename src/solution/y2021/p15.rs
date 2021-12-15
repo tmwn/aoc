@@ -1,3 +1,4 @@
+#[aocio::aocio]
 pub fn small(_: Vec<String>) -> i32 {
     todo!()
 }
