@@ -25,6 +25,13 @@ fn default_separate(x: Vec<i32>) -> usize {
     (x[0] + x[1]) as usize
 }
 
+#[aocio::aocio]
+fn tuple((x, y): Tuple<i32, "2", i32>) -> usize {
+    (x + y) as usize
+}
+
+struct A((i32, i32));
+
 #[test]
 fn test() {
     assert_eq!(empty_separate("123".parse().unwrap()), 3);
@@ -32,13 +39,14 @@ fn test() {
     assert_eq!(
         default_separate(
             "1
-2
-3"
+    2
+    3"
             .parse()
             .unwrap()
         ),
         3
     );
+    assert_eq!(tuple("123".parse().unwrap()), 4);
 }
 
 struct VV(Vec<i32>);

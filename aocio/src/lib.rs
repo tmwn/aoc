@@ -1,45 +1,11 @@
 extern crate proc_macro;
 use proc_macro::TokenStream;
-use proc_macro2::{Ident, Span};
+use proc_macro2::Ident;
 use quote::quote;
 use syn::{parse_macro_input, ItemFn};
 
-// #[proc_macro]
-// pub fn make_answer(_item: TokenStream) -> TokenStream {
-//     "fn answer() -> u32 { 42 }".parse().unwrap()
-// }
-
-// #[proc_macro_derive(Parse, attributes(before, split))]
-// pub fn derive_answer_fn(_item: TokenStream) -> TokenStream {
-//     "fn hoge() -> u32 { 42 }".parse().unwrap()
-// }
-
-// #[proc_macro_attribute]
-// pub fn aocio_wip(attr: TokenStream, item: TokenStream) -> TokenStream {
-//     println!("attr: \"{}\"", attr.to_string());
-//     println!("item: \"{}\"", item.to_string());
-
-//     let input = parse_macro_input!(item as ItemFn);
-//     let name = &input.sig.ident;
-
-//     let (pat, ty) = match &input.sig.inputs[0] {
-//         syn::FnArg::Receiver(_) => panic!(""),
-//         syn::FnArg::Typed(x) => (&x.pat, &x.ty),
-//     };
-
-//     println!("{:#?}", &pat); // (order, cards)
-//     println!("{:#?}", &ty); // Tuple<...>
-//     let q = quote! {
-//         fn #name(x: i32) -> i32 { x * 2 }
-//     };
-//     q.into()
-// }
-
 #[proc_macro_attribute]
 pub fn aocio(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    // println!("attr: \"{}\"", attr.to_string());
-    // println!("item: \"{}\"", item.to_string());
-
     let input = parse_macro_input!(item as ItemFn);
     let name = &input.sig.ident;
 
@@ -48,86 +14,138 @@ pub fn aocio(_attr: TokenStream, item: TokenStream) -> TokenStream {
         syn::FnArg::Typed(x) => (&x.pat, &x.ty),
     };
 
-    // println!("{:#?}", pat); // (order, cards)
-    // println!("{:#?}", ty); // Tuple<...>
+    let aoc_ty = parse_ty(ty);
 
-    let mut parser = Parser::new(name.to_string());
+    print!("!!! aoc_ty {:#?}", &aoc_ty);
 
-    let (n_pat, n_ty, def) = parser.parse(pat, ty);
+    let wrapper_name = syn::Ident::new(&format!("__Wrap_{}", name), name.span());
 
+    let def = aoc_ty.definition(Some(&wrapper_name));
+
+    println!("!!! def = {}", &def);
+
+    let output = input.sig.output;
+    let block = input.block;
     let q = quote! {
-        fn #name(#n_pat: #n_ty) -> usize {
-            (x[0] + x[1]) as usize
-        }
+        fn #name(#wrapper_name(#pat): #wrapper_name) #output #block
         #def
     };
     q.into()
 }
 
-struct Parser {
-    id: usize,
-    func_name: String,
+#[derive(Debug)]
+enum AOCType<'a> {
+    Vec(TypePunct<'a>),
+    Tuple(Vec<TypePunct<'a>>),
+    Other(&'a syn::Type),
 }
 
-impl Parser {
-    fn new(func_name: String) -> Parser {
-        Parser { id: 0, func_name }
+#[derive(Debug)]
+struct TypePunct<'a> {
+    ty: Box<AOCType<'a>>,
+    punct: String,
+}
+
+impl<'a> AOCType<'a> {
+    fn real_type(&self) -> proc_macro2::TokenStream {
+        match self {
+            AOCType::Vec(tp) => {
+                let inner = tp.ty.real_type();
+                quote!(
+                    Vec<#inner>
+                )
+            }
+            AOCType::Tuple(tps) => {
+                let inners: Vec<_> = tps.into_iter().map(|tp| tp.ty.real_type()).collect();
+                quote!(
+                    (#(#inners),*)
+                )
+            }
+            AOCType::Other(ty) => {
+                quote!(#ty)
+            }
+        }
     }
 
-    fn parse<'a>(
-        &mut self,
-        pat: &'a syn::Pat,
-        ty: &'a syn::Type,
-    ) -> (syn::Pat, syn::Type, proc_macro2::TokenStream) {
-        if let Some(in_vec) = try_inner("Vec", ty) {
-            let name = self.new_id("Vec", Span::call_site());
-            let i = try_ident(pat).unwrap();
-            let inner_ty = in_vec[0].ty;
-            let sp = in_vec[0]
-                .punct
-                .unwrap_or(&syn::LitStr::new("\n", Span::call_site()))
-                .clone();
-            return (
-                syn::parse_quote!(
-                    #name(#i)
-                ),
-                syn::parse_quote!(
-                    #name
-                ),
-                quote!(
-                    struct #name(Vec<#inner_ty>);
-                    impl std::str::FromStr for #name {
-                        type Err = <#inner_ty as std::str::FromStr>::Err;
+    fn definition(&self, wrapper: Option<&Ident>) -> proc_macro2::TokenStream {
+        if let Some(wrapper) = wrapper {
+            let ty = self.real_type();
+            let inner = self.definition(None);
+            return quote!(
+                pub struct #wrapper(#ty);
+                impl std::str::FromStr for #wrapper {
+                    type Err = String;
 
-                        fn from_str(s: &str) -> Result<Self, Self::Err> {
-                            Ok(#name(s
-                                .split(#sp)
-                                .filter(|x| !x.trim().is_empty())
-                                .map(|x| x.trim().parse())
-                                .collect::<Result<_, _>>()?))
-                        }
+                    fn from_str(s: &str) -> Result<Self, Self::Err> {
+                        Ok(#wrapper(
+                            #inner
+                        ))
                     }
-                ),
+                }
             );
         }
-        (pat.clone(), ty.clone(), quote!())
-    }
-
-    fn new_id(&mut self, prefix: &str, span: proc_macro2::Span) -> Ident {
-        self.id += 1;
-        proc_macro2::Ident::new(&format!("__{}{}_{}", prefix, self.id, self.func_name), span)
+        match self {
+            AOCType::Vec(TypePunct { ty, punct }) => {
+                let inner = ty.definition(None);
+                quote!(
+                    s
+                    .trim()
+                    .split(#punct)
+                    .filter(|x|!x.trim().is_empty())
+                    .map(|s|#inner)
+                    .collect::<Vec<_>>()
+                )
+            }
+            AOCType::Tuple(tps) => {
+                let inner1 = tps[0].ty.definition(None);
+                let inner2 = tps[1].ty.definition(None);
+                let punct = &tps[0].punct;
+                quote!({
+                    let mut ss = s
+                    .trim()
+                    .split_once(#punct).unwrap();
+                    let v1 = {
+                        let s = ss.0;
+                        #inner1
+                    };
+                    let v2 = {
+                        let s = ss.1;
+                        #inner2
+                    };
+                    (v1, v2)
+                })
+            }
+            AOCType::Other(_) => {
+                quote!(s.trim().parse().unwrap())
+            }
+        }
     }
 }
 
-fn try_ident<'a>(pat: &syn::Pat) -> Option<&syn::Ident> {
-    if let syn::Pat::Ident(x) = pat {
-        Some(&x.ident)
-    } else {
-        None
+fn parse_ty<'a>(ty: &'a syn::Type) -> AOCType<'a> {
+    if let Some(vs) = try_inner("Vec", ty) {
+        if vs.len() == 1 {
+            return AOCType::Vec(TypePunct {
+                ty: Box::new(parse_ty(vs[0].0)),
+                punct: vs[0].1.clone(),
+            });
+        } else {
+            panic!("Vec bad format {}", vs.len())
+        }
+    } else if let Some(vs) = try_inner("Tuple", ty) {
+        return AOCType::Tuple(
+            vs.into_iter()
+                .map(|(ty, punct)| TypePunct {
+                    ty: Box::new(parse_ty(ty)),
+                    punct,
+                })
+                .collect(),
+        );
     }
+    AOCType::Other(ty)
 }
 
-fn try_inner<'a>(wrapper: &str, ty: &'a syn::Type) -> Option<Vec<TypePunct<'a>>> {
+fn try_inner<'a>(wrapper: &str, ty: &'a syn::Type) -> Option<Vec<(&'a syn::Type, String)>> {
     let tp = if let syn::Type::Path(tp) = ty {
         tp
     } else {
@@ -149,7 +167,7 @@ fn try_inner<'a>(wrapper: &str, ty: &'a syn::Type) -> Option<Vec<TypePunct<'a>>>
         match x {
             syn::GenericArgument::Type(ty) => {
                 if let Some(ty) = cur_ty {
-                    res.push(TypePunct { ty, punct: None })
+                    res.push((ty, "\n".to_owned()))
                 }
                 cur_ty = Some(ty);
             }
@@ -158,10 +176,8 @@ fn try_inner<'a>(wrapper: &str, ty: &'a syn::Type) -> Option<Vec<TypePunct<'a>>>
                     attrs: _,
                     lit: syn::Lit::Str(punct),
                 }) => {
-                    res.push(TypePunct {
-                        ty: cur_ty.unwrap(),
-                        punct: Some(punct),
-                    });
+                    res.push((cur_ty.unwrap(), punct.value()));
+                    cur_ty = None;
                 }
                 _ => return None,
             },
@@ -169,16 +185,7 @@ fn try_inner<'a>(wrapper: &str, ty: &'a syn::Type) -> Option<Vec<TypePunct<'a>>>
         }
     }
     if let Some(cur) = cur_ty {
-        res.push(TypePunct {
-            ty: cur,
-            punct: None,
-        })
+        res.push((cur, "\n".to_owned()));
     }
     Some(res)
-}
-
-#[derive(Debug)]
-struct TypePunct<'a> {
-    ty: &'a syn::Type,
-    punct: Option<&'a syn::LitStr>,
 }
