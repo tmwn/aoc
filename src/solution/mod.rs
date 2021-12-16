@@ -54,17 +54,21 @@ macro_rules! days {
 pub(crate) use days;
 
 macro_rules! aoc_test {
-    ($year: literal, $day: literal, $input: literal, $small: literal $(,$large: literal)?) => {
+    ($year: literal, $day: literal, $input: literal, $($small: literal)? $(,$large: literal)?) => {
+        crate::solution::aoc_test!($year, $day, $input, $($small)?, $($large)?, tests);
+    };
+    ($year: literal, $day: literal, $input: literal, $($small: literal)?, $($large: literal)?, $module_name: ident) => {
         #[cfg(test)]
-        mod tests {
+        mod $module_name {
             const INPUT: &str = $input;
-            #[test]
-            fn small() {
+            $(
+                #[test]
+                fn small() {
                 assert_eq!(
                     crate::solution::solve(INPUT, $year, $day, false).unwrap(),
                     $small.to_string()
                 );
-            }
+            })?
             $(
                 #[test]
                 fn large() {
@@ -76,6 +80,7 @@ macro_rules! aoc_test {
             )?
         }
     };
+
 }
 pub(crate) use aoc_test;
 
