@@ -38,7 +38,7 @@ pub fn large(a: Vec<i64, ",">) -> i64 {
         loop {
             let mut halt_count = 0;
             for i in 0..5 {
-                if progs[i].run() == State::Halt {
+                if !progs[i].running() {
                     halt_count += 1;
                 }
                 while let Some(x) = progs[i].read() {

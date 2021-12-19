@@ -9,7 +9,6 @@ use super::intcode::Program;
 pub fn small(a: Vec<i64, ",">) -> String {
     let mut prog = Program::new(a);
     prog.write(1);
-    prog.run();
     prog.read_all().iter().map(|x| x.to_string()).join(",")
 }
 
@@ -17,7 +16,6 @@ pub fn small(a: Vec<i64, ",">) -> String {
 pub fn large(a: Vec<i64, ",">) -> String {
     let mut prog = Program::new(a);
     prog.write(2);
-    prog.run();
     prog.read_all().iter().map(|x| x.to_string()).join(",")
 }
 

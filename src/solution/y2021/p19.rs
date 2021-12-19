@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use aocio::aocio;
 use itertools::Itertools;
 
@@ -6,17 +8,28 @@ use crate::solution::{
     util::matrix::{self, Matrix},
 };
 
-#[aocio]
-pub fn small(
-    a: Vec<Tuple<String, " scanner ", usize, " ---", Vec<Tuple<i32, ",", i32, ",", i32>>>, "\n\n">,
-) -> usize {
-    let n = a.len();
-    let mut scs: Vec<Option<Scanner>> = vec![None; n];
+pub fn small(a: String) -> usize {
+    solve(a.parse().unwrap()).0
+}
+pub fn large(a: String) -> i32 {
+    solve(a.parse().unwrap()).1
+}
 
-    scs[0] = Some(Scanner {
-        pos: (0, 0, 0),
-        orientation: matrix::identity(3),
-    });
+#[aocio]
+pub fn solve(
+    a: Vec<Tuple<String, " scanner ", usize, " ---", Vec<Tuple<i32, ",", i32, ",", i32>>>, "\n\n">,
+) -> (usize, i32) {
+    let n = a.len();
+    let mut scs: Vec<Scanner> = vec![];
+    for i in 0..n {
+        let mut bs = a[i].2.clone();
+        bs.sort();
+        scs.push(Scanner {
+            found: i == 0,
+            pos: (0, 0, 0),
+            bs,
+        })
+    }
 
     let mut oris: Vec<Matrix<i32>> = vec![];
     for perm in [0, 1, 2].iter().permutations(3) {
@@ -27,19 +40,29 @@ pub fn small(
                     for d in 0..3 {
                         m[d][*perm[d]] = [i, j, k][d];
                     }
-                    oris.push(m);
+                    let mut sign = i * j * k;
+                    for d in 0..3 {
+                        for e in 0..d {
+                            if perm[e] > perm[d] {
+                                sign *= -1;
+                            }
+                        }
+                    }
+                    if sign == 1 {
+                        oris.push(m);
+                    }
                 }
             }
         }
     }
 
-    dfs(&mut scs, 0, &a, &oris);
+    dfs(&mut scs, 0, &oris);
 
     let mut all = vec![];
+
     for i in 0..n {
-        let sc = scs[i].clone().unwrap();
-        for b in &a[i].2 {
-            let p = add(sc.pos, mul(*b, &sc.orientation));
+        for b in &scs[i].bs {
+            let p = add(scs[i].pos, *b);
             all.push(p);
         }
     }
@@ -47,34 +70,27 @@ pub fn small(
     all.dedup();
     let small = all.len();
 
-    let mut res = 0;
+    let mut large = 0;
     for i in 0..n {
         for j in 0..n {
-            let x = sub(scs[i].as_ref().unwrap().pos, scs[j].as_ref().unwrap().pos);
-            res = res.max(x.0.abs() + x.1.abs() + x.2.abs());
+            let x = sub(scs[i].pos, scs[j].pos);
+            large = large.max(x.0.abs() + x.1.abs() + x.2.abs());
         }
     }
-    res as usize
+    (small, large)
 }
 
-fn dfs(
-    scs: &mut Vec<Option<Scanner>>,
-    i: usize,
-    a: &Vec<(String, usize, Vec<P>)>,
-    oris: &Vec<Ori>,
-) {
-    let sc = scs[i].clone().unwrap();
-    let b1 = &a[i].2;
+fn dfs(scs: &mut Vec<Scanner>, i: usize, oris: &Vec<Ori>) {
     for j in 0..scs.len() {
-        if scs[j].is_some() {
+        if scs[j].found {
             continue;
         }
-        if let Some((o, d)) = overlap(&b1, &a[j].2, oris) {
-            scs[j] = Some(Scanner {
-                orientation: mul_ori(&sc.orientation, &o),
-                pos: add(sc.pos, mul(d, &sc.orientation)),
-            });
-            dfs(scs, j, a, oris);
+        if let Some((o, d)) = overlap(&scs[i].bs, &scs[j].bs, oris) {
+            scs[j].found = true;
+            scs[j].pos = add(scs[i].pos, d);
+            scs[j].bs = update(&scs[j].bs, &o, (0, 0, 0));
+            scs[j].bs.sort();
+            dfs(scs, j, oris);
         }
     }
 }
@@ -84,13 +100,13 @@ type Ori = Matrix<i32>;
 
 fn overlap(a: &Vec<P>, b: &Vec<P>, oris: &Vec<Ori>) -> Option<(Ori, P)> {
     for o in oris {
+        let b2 = update(&b, o, (0, 0, 0));
         for i in 0..a.len() {
             for j in 0..b.len() {
-                let d = sub(a[i], mul(b[j], o));
-                let m = update(&b, o, d);
+                let d = sub(a[i], b2[j]);
                 let mut count = 0;
-                for x in a {
-                    if m.binary_search(x).is_ok() {
+                for x in b2.iter() {
+                    if a.binary_search(&add(*x, d)).is_ok() {
                         count += 1;
                     }
                 }
@@ -104,9 +120,7 @@ fn overlap(a: &Vec<P>, b: &Vec<P>, oris: &Vec<Ori>) -> Option<(Ori, P)> {
 }
 
 fn update(a: &Vec<P>, o: &Ori, d: P) -> Vec<P> {
-    let mut res: Vec<_> = a.into_iter().map(|x| add(mul(*x, o), d)).collect();
-    res.sort();
-    res
+    a.into_iter().map(|x| add(mul(*x, o), d)).collect()
 }
 
 fn add(a: P, b: P) -> P {
@@ -116,23 +130,21 @@ fn sub(a: P, b: P) -> P {
     (a.0 - b.0, a.1 - b.1, a.2 - b.2)
 }
 fn mul(a: P, b: &Ori) -> P {
-    let mut v = vec![a.0, a.1, a.2];
-    let res = matrix::mul_vec(b, &v);
+    let v = &[a.0, a.1, a.2];
+    let mut res = [0; 3];
+    for i in 0..3 {
+        for j in 0..3 {
+            res[i] += b[i][j] * v[j];
+        }
+    }
     (res[0], res[1], res[2])
 }
-fn mul_ori(a: &Ori, b: &Ori) -> Ori {
-    matrix::mul(a, b)
-}
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 struct Scanner {
-    orientation: Ori,
+    found: bool,
     pos: P,
-}
-
-#[aocio]
-pub fn large(_: Vec<String>) -> i32 {
-    todo!()
+    bs: Vec<P>,
 }
 
 aoc_test!(

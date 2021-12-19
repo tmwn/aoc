@@ -57,6 +57,7 @@ impl Program {
         self.input.push_back(v)
     }
     pub fn read(&mut self) -> Option<i64> {
+        self.run();
         self.output.pop_front()
     }
     pub fn read_all(&mut self) -> Vec<i64> {
@@ -72,7 +73,7 @@ impl Program {
     fn output(&mut self, v: i64) {
         self.output.push_back(v)
     }
-    pub fn step(&mut self) -> State {
+    fn step(&mut self) -> State {
         let i = self.instr();
         match i.op {
             1 => {
@@ -123,12 +124,15 @@ impl Program {
             9 => {
                 self.base += self.value(i.mode.0);
             }
-            99 => return State::Halt,
+            99 => {
+                self.ip -= 1;
+                return State::Halt;
+            }
             _ => panic!(),
         }
         return State::Ok;
     }
-    pub fn run(&mut self) -> State {
+    fn run(&mut self) -> State {
         loop {
             match self.step() {
                 State::Ok => (),
@@ -141,6 +145,12 @@ impl Program {
             ()
         }
         self.mem[0]
+    }
+    pub fn running(&mut self) -> bool {
+        self.run() != State::Halt
+    }
+    pub fn done(&mut self) -> bool {
+        self.run() == State::Halt && self.output.is_empty()
     }
 }
 
