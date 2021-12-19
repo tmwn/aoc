@@ -32,7 +32,7 @@ fn solve(
                 y += vy;
                 max_y = max_y.max(y);
                 vx = 0.max(vx - 1);
-                vy = vy - 1;
+                vy -= 1;
             }
             if ok {
                 res = res.max(max_y);
