@@ -10,7 +10,7 @@ pub fn aocio(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let name = &input.sig.ident;
 
     let (pat, ty) = match &input.sig.inputs[0] {
-        syn::FnArg::Receiver(_) => panic!("Receive type not supported"),
+        syn::FnArg::Receiver(_) => panic!("Receiver type not supported"),
         syn::FnArg::Typed(x) => (&x.pat, &x.ty),
     };
 
@@ -35,6 +35,7 @@ enum AOCType<'a> {
     Vec(TypePunct<'a>),
     Tuple(Vec<TypePunct<'a>>),
     Other(&'a syn::Type),
+    DontCare,
 }
 
 #[derive(Debug)]
@@ -43,25 +44,33 @@ struct TypePunct<'a> {
     punct: String,
 }
 
+impl<'a> TypePunct<'a> {
+    fn dont_care(&'a self) -> bool {
+        if let AOCType::DontCare = self.ty.as_ref() {
+            return true;
+        }
+        false
+    }
+}
+
 impl<'a> AOCType<'a> {
-    fn real_type(&self) -> proc_macro2::TokenStream {
-        match self {
+    fn real_type(&self) -> Option<proc_macro2::TokenStream> {
+        Some(match self {
             AOCType::Vec(tp) => {
-                let inner = tp.ty.real_type();
+                let inner = tp.ty.real_type().unwrap();
                 quote!(
                     Vec<#inner>
                 )
             }
             AOCType::Tuple(tps) => {
-                let inners: Vec<_> = tps.into_iter().map(|tp| tp.ty.real_type()).collect();
+                let inners: Vec<_> = tps.into_iter().filter_map(|tp| tp.ty.real_type()).collect();
                 quote!(
                     (#(#inners),*)
                 )
             }
-            AOCType::Other(ty) => {
-                quote!(#ty)
-            }
-        }
+            AOCType::Other(ty) => quote!(#ty),
+            AOCType::DontCare => return None,
+        })
     }
 
     fn definition(&self, wrapper: Option<&Ident>) -> proc_macro2::TokenStream {
@@ -96,46 +105,77 @@ impl<'a> AOCType<'a> {
             }
             AOCType::Tuple(tps) => {
                 let n = tps.len();
-                let names: Vec<_> = (0..n).map(|i| format!("v{}", i)).collect();
-                let idents: Vec<_> = names
-                    .iter()
-                    .map(|x| syn::Ident::new(x, Span::call_site()))
-                    .collect();
-                let inners: Vec<_> = tps.iter().map(|tp| tp.ty.definition(None)).collect();
                 let puncts: Vec<_> = tps.iter().map(|tp| &tp.punct).collect();
+
+                struct Item {
+                    inner: proc_macro2::TokenStream,
+                    ident: Ident,
+                }
+                let items: Vec<Option<Item>> = (0..n)
+                    .map(|i| {
+                        if tps[i].dont_care() {
+                            None
+                        } else {
+                            let name = format!("v{}", i);
+                            let inner = tps[i].ty.definition(None);
+                            let ident = Ident::new(&name, Span::call_site());
+                            Some(Item { inner, ident })
+                        }
+                    })
+                    .collect();
 
                 let mut quotes = vec![];
                 for i in 0..(n - 1) {
-                    let ident = &idents[i];
                     let punct = &puncts[i];
-                    let inner = &inners[i];
-                    let q = quote!(
+                    let q = items[i].as_ref().map(|item| {
+                        let ident = &item.ident;
+                        let inner = &item.inner;
+                        quote!(
+                            let #ident = {
+                                let s = ss.0;
+                                #inner
+                            };
+                        )
+                    });
+                    let q2 = quote!(
                         let ss = s.trim().split_once(#punct).unwrap();
-                        let #ident = {
-                            let s = ss.0;
-                            #inner
-                        };
+                        #q
                         let s = ss.1;
                     );
-                    quotes.push(q);
+                    quotes.push(q2);
                 }
 
-                let ident = &idents[n - 1];
-                let inner = &inners[n - 1];
+                let q = items[n - 1].as_ref().map(|i| {
+                    let ident = &i.ident;
+                    let inner = &i.inner;
+                    quote!(
+                        let #ident = #inner;
+                    )
+                });
+                let idents: Vec<_> = items
+                    .into_iter()
+                    .filter_map(|oi| oi.map(|x| x.ident))
+                    .collect();
                 quote!({
                     #(#quotes)*
-                    let #ident = #inner;
+                    #q
                     (#(#idents),*)
                 })
             }
             AOCType::Other(_) => {
                 quote!(s.trim().parse().unwrap())
             }
+            AOCType::DontCare => {
+                todo!()
+            }
         }
     }
 }
 
 fn parse_ty<'a>(ty: &'a syn::Type) -> AOCType<'a> {
+    if let syn::Type::Infer(_) = ty {
+        return AOCType::DontCare;
+    }
     if let Some(vs) = try_inner("Vec", ty, "\n") {
         if vs.len() == 1 {
             return AOCType::Vec(TypePunct {
