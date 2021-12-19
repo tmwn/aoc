@@ -2,11 +2,11 @@ use aocio::aocio;
 
 use crate::solution::{aoc_test, util::grid};
 
-use super::intcode::{Program, State};
+use super::intcode::Program;
 
 #[aocio]
-pub fn small(a: Vec<i64, ",">) -> i32 {
-    let mut prog = Program::new(a);
+pub fn small(input: Vec<i64, ",">) -> i32 {
+    let mut prog = Program::new(input);
     let n = 100;
     let mut visited = vec![vec![false; n]; n];
     let mut white = vec![vec![false; n]; n];

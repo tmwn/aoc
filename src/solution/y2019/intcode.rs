@@ -130,7 +130,7 @@ impl Program {
             }
             _ => panic!(),
         }
-        return State::Ok;
+        State::Ok
     }
     fn run(&mut self) -> State {
         loop {
@@ -141,16 +141,11 @@ impl Program {
         }
     }
     pub fn run_until_halt(&mut self) -> i64 {
-        while self.step() != State::Halt {
-            ()
-        }
+        while self.step() != State::Halt {}
         self.mem[0]
     }
     pub fn running(&mut self) -> bool {
         self.run() != State::Halt
-    }
-    pub fn done(&mut self) -> bool {
-        self.run() == State::Halt && self.output.is_empty()
     }
 }
 

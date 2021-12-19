@@ -35,7 +35,7 @@ pub fn solve(
             all.push(p);
         }
     }
-    all.sort();
+    all.sort_unstable();
     all.dedup();
     let small = all.len();
 
@@ -71,7 +71,7 @@ impl Solver {
     }
     fn overlap(&self, sorted_base: &Vec<P>, examine: usize) -> Option<(Vec<P>, P)> {
         for o in self.oris.iter() {
-            let rotated: Vec<_> = self.bs[examine].iter().map(|x| mul(*x, &o)).collect();
+            let rotated: Vec<_> = self.bs[examine].iter().map(|x| mul(*x, o)).collect();
 
             for p1 in sorted_base.iter() {
                 for p2 in rotated.iter() {
@@ -148,9 +148,9 @@ struct Scanner {
 }
 
 impl Scanner {
-    fn new(pos: P, bs: &Vec<P>) -> Scanner {
-        let mut bs = bs.clone();
-        bs.sort();
+    fn new(pos: P, bs: &[P]) -> Scanner {
+        let mut bs = bs.to_owned();
+        bs.sort_unstable();
         Scanner { pos, bs }
     }
 }

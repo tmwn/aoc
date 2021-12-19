@@ -3,7 +3,7 @@ use itertools::Itertools;
 
 use crate::solution::{aoc_test, y2019::intcode::Program};
 
-use super::intcode::State;
+
 
 #[aocio]
 pub fn small(a: Vec<i64, ",">) -> i64 {
