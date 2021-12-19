@@ -1,3 +1,4 @@
+#![allow(clippy::needless_lifetimes)]
 extern crate proc_macro;
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span};
@@ -63,7 +64,7 @@ impl<'a> AOCType<'a> {
                 )
             }
             AOCType::Tuple(tps) => {
-                let inners: Vec<_> = tps.into_iter().filter_map(|tp| tp.ty.real_type()).collect();
+                let inners: Vec<_> = tps.iter().filter_map(|tp| tp.ty.real_type()).collect();
                 quote!(
                     (#(#inners),*)
                 )
@@ -228,16 +229,13 @@ fn try_inner<'a>(
                 }
                 cur_ty = Some(ty);
             }
-            syn::GenericArgument::Const(expr) => match expr {
-                syn::Expr::Lit(syn::ExprLit {
-                    attrs: _,
-                    lit: syn::Lit::Str(punct),
-                }) => {
-                    res.push((cur_ty.unwrap(), punct.value()));
-                    cur_ty = None;
-                }
-                _ => return None,
-            },
+            syn::GenericArgument::Const(syn::Expr::Lit(syn::ExprLit {
+                attrs: _,
+                lit: syn::Lit::Str(punct),
+            })) => {
+                res.push((cur_ty.unwrap(), punct.value()));
+                cur_ty = None;
+            }
             _ => return None,
         }
     }
