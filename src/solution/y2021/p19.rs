@@ -14,12 +14,10 @@ pub fn large(a: String) -> i32 {
 pub fn solve(
     bs: Vec<Tuple<_, " scanner ", _, " ---", Vec<Tuple<i32, ",", i32, ",", i32>>>, "\n\n">,
 ) -> (usize, i32) {
-    let n = bs.len();
-
     let oris = all_orientations();
     let solver = Solver { oris, bs };
 
-    let mut scs: Vec<Option<Scanner>> = vec![None; n];
+    let mut scs: Vec<Option<Scanner>> = vec![None; solver.bs.len()];
     scs[0] = Some(Scanner::new((0, 0, 0), &solver.bs[0]));
 
     solver.dfs(&mut scs, 0);
@@ -27,7 +25,6 @@ pub fn solve(
     let scs: Vec<_> = scs.into_iter().map(|x| x.unwrap()).collect();
 
     let mut all = vec![];
-
     for sc in scs.iter() {
         for b in &sc.bs {
             let p = add(sc.pos, *b);
