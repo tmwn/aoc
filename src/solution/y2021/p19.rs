@@ -56,11 +56,11 @@ struct Solver {
 
 impl Solver {
     fn dfs(&self, scs: &mut Vec<Option<Scanner>>, i: usize) {
-        let sc = scs[i].as_ref().unwrap().clone();
         for j in 0..scs.len() {
             if scs[j].is_some() {
                 continue;
             }
+            let sc = scs[i].as_ref().unwrap();
             if let Some((rotated, d)) = self.overlap(&sc.bs, j) {
                 let pos = add(sc.pos, d);
                 let sc = Scanner::new(pos, &rotated);
