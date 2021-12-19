@@ -3,7 +3,7 @@ use aocio::aocio;
 use crate::solution::{aoc_test, y2019::intcode::Program};
 
 #[aocio]
-pub fn small(a: Vec<i32, ",">) -> i32 {
+pub fn small(a: Vec<i64, ",">) -> i64 {
     let mut prog = Program::new(a);
     prog.write(1);
     prog.run_until_halt();
@@ -16,7 +16,7 @@ pub fn small(a: Vec<i32, ",">) -> i32 {
 }
 
 #[aocio]
-pub fn large(a: Vec<i32, ",">) -> i32 {
+pub fn large(a: Vec<i64, ",">) -> i64 {
     let mut prog = Program::new(a);
     prog.write(5);
     prog.run_until_halt();

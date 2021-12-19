@@ -6,7 +6,7 @@ use crate::solution::{aoc_test, y2019::intcode::Program};
 use super::intcode::State;
 
 #[aocio]
-pub fn small(a: Vec<i32, ",">) -> i32 {
+pub fn small(a: Vec<i64, ",">) -> i64 {
     let mut res = 0;
     for perm in [0, 1, 2, 3, 4].iter().permutations(5) {
         let mut v = 0;
@@ -23,7 +23,7 @@ pub fn small(a: Vec<i32, ",">) -> i32 {
 }
 
 #[aocio]
-pub fn large(a: Vec<i32, ",">) -> i32 {
+pub fn large(a: Vec<i64, ",">) -> i64 {
     let mut res = 0;
     for perm in (5..10).permutations(5) {
         let mut progs = vec![];

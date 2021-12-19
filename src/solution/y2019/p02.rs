@@ -5,7 +5,7 @@ use crate::solution::aoc_test;
 use super::intcode::Program;
 
 #[aocio]
-pub fn small(mut a: Vec<i32, ",">) -> i32 {
+pub fn small(mut a: Vec<i64, ",">) -> i64 {
     if std::env::var("PROD").is_ok() {
         a[1] = 12;
         a[2] = 2;
@@ -15,7 +15,7 @@ pub fn small(mut a: Vec<i32, ",">) -> i32 {
 }
 
 #[aocio]
-pub fn large(mut a: Vec<i32, ",">) -> i32 {
+pub fn large(mut a: Vec<i64, ",">) -> i64 {
     for noun in 0..100 {
         for verb in 0..100 {
             a[1] = noun;

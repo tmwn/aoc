@@ -1,22 +1,25 @@
 use std::collections::VecDeque;
 
 pub struct Program {
-    pub mem: Vec<i32>,
+    pub mem: Vec<i64>,
     ip: usize,
-    input: VecDeque<i32>,
-    output: VecDeque<i32>,
+    input: VecDeque<i64>,
+    output: VecDeque<i64>,
+    base: i64,
 }
 
 impl Program {
-    pub fn new(mem: Vec<i32>) -> Program {
+    pub fn new(mut mem: Vec<i64>) -> Program {
+        mem.resize(10000, 0);
         Program {
             mem,
             ip: 0,
             input: VecDeque::new(),
             output: VecDeque::new(),
+            base: 0,
         }
     }
-    fn next(&mut self) -> i32 {
+    fn next(&mut self) -> i64 {
         let res = self.mem[self.ip];
         self.ip += 1;
         res
@@ -32,28 +35,41 @@ impl Program {
             mode: (first as u8, second as u8, third as u8),
         }
     }
-    fn store(&mut self, v: i32) {
-        let i = self.next() as usize;
-        self.mem[i] = v;
+    fn store(&mut self, v: i64, mode: u8) {
+        let x = self.next();
+        let i = match mode {
+            0 => x,
+            2 => self.base + x,
+            _ => panic!(),
+        };
+        self.mem[i as usize] = v;
     }
-    fn value(&mut self, mode: u8) -> i32 {
+    fn value(&mut self, mode: u8) -> i64 {
         let i = self.next();
         match mode {
             0 => self.mem[i as usize],
             1 => i,
+            2 => self.mem[(self.base + i) as usize],
             _ => panic!(),
         }
     }
-    pub fn write(&mut self, v: i32) {
+    pub fn write(&mut self, v: i64) {
         self.input.push_back(v)
     }
-    pub fn read(&mut self) -> Option<i32> {
+    pub fn read(&mut self) -> Option<i64> {
         self.output.pop_front()
     }
-    fn input(&mut self) -> Option<i32> {
+    pub fn read_all(&mut self) -> Vec<i64> {
+        let mut res = vec![];
+        while let Some(x) = self.read() {
+            res.push(x);
+        }
+        res
+    }
+    fn input(&mut self) -> Option<i64> {
         self.input.pop_front()
     }
-    fn output(&mut self, v: i32) {
+    fn output(&mut self, v: i64) {
         self.output.push_back(v)
     }
     pub fn step(&mut self) -> State {
@@ -61,16 +77,16 @@ impl Program {
         match i.op {
             1 => {
                 let v = self.value(i.mode.0) + self.value(i.mode.1);
-                self.store(v);
+                self.store(v, i.mode.2);
             }
             2 => {
                 let v = self.value(i.mode.0) * self.value(i.mode.1);
-                self.store(v);
+                self.store(v, i.mode.2);
             }
             3 => {
                 let v = self.input();
                 if let Some(x) = v {
-                    self.store(x);
+                    self.store(x, i.mode.0);
                 } else {
                     self.ip -= 1;
                     return State::Wait;
@@ -97,12 +113,15 @@ impl Program {
             7 => {
                 let v = self.value(i.mode.0);
                 let u = self.value(i.mode.1);
-                self.store(if v < u { 1 } else { 0 });
+                self.store(if v < u { 1 } else { 0 }, i.mode.2);
             }
             8 => {
                 let v = self.value(i.mode.0);
                 let u = self.value(i.mode.1);
-                self.store(if v == u { 1 } else { 0 });
+                self.store(if v == u { 1 } else { 0 }, i.mode.2);
+            }
+            9 => {
+                self.base += self.value(i.mode.0);
             }
             99 => return State::Halt,
             _ => panic!(),
@@ -117,7 +136,7 @@ impl Program {
             }
         }
     }
-    pub fn run_until_halt(&mut self) -> i32 {
+    pub fn run_until_halt(&mut self) -> i64 {
         while self.step() != State::Halt {
             ()
         }
