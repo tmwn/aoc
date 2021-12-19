@@ -50,13 +50,13 @@ impl Program {
     pub fn read(&mut self) -> Option<i32> {
         self.output.pop_front()
     }
-    fn input(&mut self) -> i32 {
-        self.input.pop_front().unwrap()
+    fn input(&mut self) -> Option<i32> {
+        self.input.pop_front()
     }
     fn output(&mut self, v: i32) {
         self.output.push_back(v)
     }
-    pub fn step(&mut self) -> bool {
+    pub fn step(&mut self) -> State {
         let i = self.instr();
         match i.op {
             1 => {
@@ -69,7 +69,12 @@ impl Program {
             }
             3 => {
                 let v = self.input();
-                self.store(v);
+                if let Some(x) = v {
+                    self.store(x);
+                } else {
+                    self.ip -= 1;
+                    return State::Wait;
+                }
             }
             4 => {
                 let v = self.value(i.mode.0);
@@ -99,13 +104,21 @@ impl Program {
                 let u = self.value(i.mode.1);
                 self.store(if v == u { 1 } else { 0 });
             }
-            99 => return false,
+            99 => return State::Halt,
             _ => panic!(),
         }
-        return true;
+        return State::Ok;
+    }
+    pub fn run(&mut self) -> State {
+        loop {
+            match self.step() {
+                State::Ok => (),
+                x => return x,
+            }
+        }
     }
     pub fn run_until_halt(&mut self) -> i32 {
-        while self.step() {
+        while self.step() != State::Halt {
             ()
         }
         self.mem[0]
@@ -116,4 +129,11 @@ struct Instr {
     op: usize,
     // first, second, third
     mode: (u8, u8, u8),
+}
+
+#[derive(PartialEq, Eq)]
+pub enum State {
+    Ok,
+    Halt,
+    Wait,
 }
