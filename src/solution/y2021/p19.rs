@@ -1,12 +1,7 @@
-use std::collections::HashSet;
-
 use aocio::aocio;
 use itertools::Itertools;
 
-use crate::solution::{
-    aoc_test,
-    util::matrix::{self, Matrix},
-};
+use crate::solution::{aoc_test, util::matrix::Matrix};
 
 pub fn small(a: String) -> usize {
     solve(a.parse().unwrap()).0
@@ -19,19 +14,87 @@ pub fn large(a: String) -> i32 {
 pub fn solve(
     a: Vec<Tuple<String, " scanner ", usize, " ---", Vec<Tuple<i32, ",", i32, ",", i32>>>, "\n\n">,
 ) -> (usize, i32) {
-    let n = a.len();
-    let mut scs: Vec<Scanner> = vec![];
-    for i in 0..n {
-        let mut bs = a[i].2.clone();
-        bs.sort();
-        scs.push(Scanner {
-            found: i == 0,
-            pos: (0, 0, 0),
-            bs,
-        })
-    }
+    let bs: Vec<_> = a.into_iter().map(|x| x.2).collect();
+    let n = bs.len();
 
-    let mut oris: Vec<Matrix<i32>> = vec![];
+    let oris = all_orientations();
+    let solver = Solver { oris, bs };
+
+    let mut scs: Vec<Option<Scanner>> = vec![None; n];
+    scs[0] = Some(Scanner::new((0, 0, 0), &solver.bs[0]));
+
+    solver.dfs(&mut scs, 0);
+
+    let scs: Vec<_> = scs.into_iter().map(|x| x.unwrap()).collect();
+
+    let mut all = vec![];
+
+    for sc in scs.iter() {
+        for b in &sc.bs {
+            let p = add(sc.pos, *b);
+            all.push(p);
+        }
+    }
+    all.sort();
+    all.dedup();
+    let small = all.len();
+
+    let mut large = 0;
+    for sc1 in scs.iter() {
+        for sc2 in scs.iter() {
+            let x = sub(sc1.pos, sc2.pos);
+            large = large.max(x.0.abs() + x.1.abs() + x.2.abs());
+        }
+    }
+    (small, large)
+}
+
+struct Solver {
+    oris: Vec<Ori>,
+    bs: Vec<Vec<P>>,
+}
+
+impl Solver {
+    fn dfs(&self, scs: &mut Vec<Option<Scanner>>, i: usize) {
+        let sc = scs[i].as_ref().unwrap().clone();
+        for j in 0..scs.len() {
+            if scs[j].is_some() {
+                continue;
+            }
+            if let Some((rotated, d)) = self.overlap(&sc.bs, j) {
+                let pos = add(sc.pos, d);
+                let sc = Scanner::new(pos, &rotated);
+                scs[j] = Some(sc);
+                self.dfs(scs, j);
+            }
+        }
+    }
+    fn overlap(&self, sorted_base: &Vec<P>, examine: usize) -> Option<(Vec<P>, P)> {
+        for o in self.oris.iter() {
+            let rotated: Vec<_> = self.bs[examine].iter().map(|x| mul(*x, &o)).collect();
+
+            for p1 in sorted_base.iter() {
+                for p2 in rotated.iter() {
+                    let d = sub(*p1, *p2);
+
+                    let mut count = 0;
+                    for x in rotated.iter() {
+                        if sorted_base.binary_search(&add(*x, d)).is_ok() {
+                            count += 1;
+                        }
+                    }
+                    if count >= 12 {
+                        return Some((rotated, d));
+                    }
+                }
+            }
+        }
+        None
+    }
+}
+
+fn all_orientations() -> Vec<Ori> {
+    let mut oris: Vec<Ori> = vec![];
     for perm in [0, 1, 2].iter().permutations(3) {
         for i in [-1, 1] {
             for j in [-1, 1] {
@@ -55,73 +118,11 @@ pub fn solve(
             }
         }
     }
-
-    dfs(&mut scs, 0, &oris);
-
-    let mut all = vec![];
-
-    for i in 0..n {
-        for b in &scs[i].bs {
-            let p = add(scs[i].pos, *b);
-            all.push(p);
-        }
-    }
-    all.sort();
-    all.dedup();
-    let small = all.len();
-
-    let mut large = 0;
-    for i in 0..n {
-        for j in 0..n {
-            let x = sub(scs[i].pos, scs[j].pos);
-            large = large.max(x.0.abs() + x.1.abs() + x.2.abs());
-        }
-    }
-    (small, large)
-}
-
-fn dfs(scs: &mut Vec<Scanner>, i: usize, oris: &Vec<Ori>) {
-    for j in 0..scs.len() {
-        if scs[j].found {
-            continue;
-        }
-        if let Some((o, d)) = overlap(&scs[i].bs, &scs[j].bs, oris) {
-            scs[j].found = true;
-            scs[j].pos = add(scs[i].pos, d);
-            scs[j].bs = update(&scs[j].bs, &o, (0, 0, 0));
-            scs[j].bs.sort();
-            dfs(scs, j, oris);
-        }
-    }
+    oris
 }
 
 type P = (i32, i32, i32);
 type Ori = Matrix<i32>;
-
-fn overlap(a: &Vec<P>, b: &Vec<P>, oris: &Vec<Ori>) -> Option<(Ori, P)> {
-    for o in oris {
-        let b2 = update(&b, o, (0, 0, 0));
-        for i in 0..a.len() {
-            for j in 0..b.len() {
-                let d = sub(a[i], b2[j]);
-                let mut count = 0;
-                for x in b2.iter() {
-                    if a.binary_search(&add(*x, d)).is_ok() {
-                        count += 1;
-                    }
-                }
-                if count >= 12 {
-                    return Some((o.clone(), d));
-                }
-            }
-        }
-    }
-    None
-}
-
-fn update(a: &Vec<P>, o: &Ori, d: P) -> Vec<P> {
-    a.into_iter().map(|x| add(mul(*x, o), d)).collect()
-}
 
 fn add(a: P, b: P) -> P {
     (a.0 + b.0, a.1 + b.1, a.2 + b.2)
@@ -140,11 +141,18 @@ fn mul(a: P, b: &Ori) -> P {
     (res[0], res[1], res[2])
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Scanner {
-    found: bool,
     pos: P,
-    bs: Vec<P>,
+    bs: Vec<P>, // sorted
+}
+
+impl Scanner {
+    fn new(pos: P, bs: &Vec<P>) -> Scanner {
+        let mut bs = bs.clone();
+        bs.sort();
+        Scanner { pos, bs }
+    }
 }
 
 aoc_test!(
