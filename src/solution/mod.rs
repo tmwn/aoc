@@ -24,7 +24,7 @@ macro_rules! years {
     }
 }
 
-years!(2020, y2020; 2021, y2021);
+years!(2019, y2019; 2020, y2020; 2021, y2021);
 
 macro_rules! days {
     (
