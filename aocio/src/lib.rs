@@ -126,7 +126,6 @@ impl<'a> AOCType<'a> {
 
                 let mut quotes = vec![];
                 for i in 0..(n - 1) {
-                    let punct = &puncts[i];
                     let q = items[i].as_ref().map(|item| {
                         let ident = &item.ident;
                         let inner = &item.inner;
@@ -137,6 +136,7 @@ impl<'a> AOCType<'a> {
                             };
                         )
                     });
+                    let punct = &puncts[i];
                     let q2 = quote!(
                         let ss = s.trim().split_once(#punct).unwrap();
                         #q
@@ -166,7 +166,7 @@ impl<'a> AOCType<'a> {
                 quote!(s.trim().parse().unwrap())
             }
             AOCType::DontCare => {
-                todo!()
+                panic!("_ is usable only in Tuple");
             }
         }
     }
