@@ -12,9 +12,8 @@ pub fn large(a: String) -> i32 {
 
 #[aocio]
 pub fn solve(
-    a: Vec<Tuple<String, " scanner ", usize, " ---", Vec<Tuple<i32, ",", i32, ",", i32>>>, "\n\n">,
+    bs: Vec<Tuple<_, " scanner ", _, " ---", Vec<Tuple<i32, ",", i32, ",", i32>>>, "\n\n">,
 ) -> (usize, i32) {
-    let bs: Vec<_> = a.into_iter().map(|x| x.2).collect();
     let n = bs.len();
 
     let oris = all_orientations();
