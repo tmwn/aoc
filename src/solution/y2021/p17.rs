@@ -11,9 +11,7 @@ pub fn large(s: String) -> i32 {
 }
 
 #[aocio]
-fn solve(
-    (_, x1, x2, y1, y2): Tuple<String, "=", i32, "..", i32, ", y=", i32, "..", i32>,
-) -> (i32, i32) {
+fn solve((x1, x2, y1, y2): Tuple<_, "=", i32, "..", i32, ", y=", i32, "..", i32>) -> (i32, i32) {
     let mut res = 0;
     let mut count = 0;
     for init_vx in 1..=x2 {
