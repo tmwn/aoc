@@ -145,7 +145,7 @@ impl Program {
         self.mem[0]
     }
     pub fn running(&mut self) -> bool {
-        self.run() != State::Halt
+        self.run() != State::Halt || !self.output.is_empty()
     }
 }
 
