@@ -11,7 +11,7 @@ pub fn small(mut a: Vec<i32, ",">) -> i32 {
         a[2] = 2;
     }
     let mut prog = Program::new(a);
-    prog.run()
+    prog.run_until_halt()
 }
 
 #[aocio]
@@ -21,7 +21,7 @@ pub fn large(mut a: Vec<i32, ",">) -> i32 {
             a[1] = noun;
             a[2] = verb;
             let mut prog = Program::new(a.clone());
-            let v = prog.run();
+            let v = prog.run_until_halt();
             if v == 19690720 {
                 return noun * 100 + verb;
             }
