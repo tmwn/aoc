@@ -15,10 +15,8 @@ pub fn aocio(_attr: TokenStream, item: TokenStream) -> TokenStream {
         syn::FnArg::Typed(x) => (&x.pat, &x.ty),
     };
 
-    let aoc_ty = parse_ty(ty);
     let wrapper_name = syn::Ident::new(&format!("__Wrap_{}", name), name.span());
-
-    let def = aoc_ty.definition(Some(&wrapper_name));
+    let def = parse_ty(ty).definition(&wrapper_name);
 
     let output = input.sig.output;
     let block = input.block;
@@ -74,27 +72,10 @@ impl<'a> AOCType<'a> {
         })
     }
 
-    fn definition(&self, wrapper: Option<&Ident>) -> proc_macro2::TokenStream {
-        if let Some(wrapper) = wrapper {
-            let ty = self.real_type();
-            let inner = self.definition(None);
-            return quote!(
-                #[allow(non_camel_case_types)]
-                pub struct #wrapper(#ty);
-                impl std::str::FromStr for #wrapper {
-                    type Err = String;
-
-                    fn from_str(s: &str) -> Result<Self, Self::Err> {
-                        Ok(#wrapper(
-                            #inner
-                        ))
-                    }
-                }
-            );
-        }
+    fn parsing(&self) -> proc_macro2::TokenStream {
         match self {
             AOCType::Vec(TypePunct { ty, punct }) => {
-                let inner = ty.definition(None);
+                let inner = ty.parsing();
                 quote!(
                     s
                     .trim()
@@ -118,7 +99,7 @@ impl<'a> AOCType<'a> {
                             None
                         } else {
                             let name = format!("v{}", i);
-                            let inner = tps[i].ty.definition(None);
+                            let inner = tps[i].ty.parsing();
                             let ident = Ident::new(&name, Span::call_site());
                             Some(Item { inner, ident })
                         }
@@ -170,6 +151,24 @@ impl<'a> AOCType<'a> {
                 panic!("_ is usable only in Tuple");
             }
         }
+    }
+
+    fn definition(&self, wrapper: &Ident) -> proc_macro2::TokenStream {
+        let ty = self.real_type();
+        let inner = self.parsing();
+        return quote!(
+            #[allow(non_camel_case_types)]
+            pub struct #wrapper(#ty);
+            impl std::str::FromStr for #wrapper {
+                type Err = String;
+
+                fn from_str(s: &str) -> Result<Self, Self::Err> {
+                    Ok(#wrapper(
+                        #inner
+                    ))
+                }
+            }
+        );
     }
 }
 
