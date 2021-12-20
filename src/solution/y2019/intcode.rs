@@ -69,6 +69,20 @@ impl Program {
         }
         res
     }
+    pub fn read_ascii(&mut self, show: bool) -> Vec<Vec<char>> {
+        let s: String = self
+            .read_all()
+            .into_iter()
+            .map(|x| x as u8 as char)
+            .collect();
+        if show {
+            print!("{}", &s);
+        }
+        s.trim()
+            .split('\n')
+            .map(|row| row.chars().collect())
+            .collect()
+    }
     fn input(&mut self) -> Option<i64> {
         self.input.pop_front()
     }
