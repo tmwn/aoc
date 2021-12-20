@@ -1,4 +1,6 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, str::FromStr};
+
+use aocio::aocio;
 
 pub struct Program {
     pub mem: Vec<i64>,
@@ -160,4 +162,17 @@ pub enum State {
     Ok,
     Halt,
     Wait,
+}
+
+impl FromStr for Program {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(parse(s.parse().unwrap()))
+    }
+}
+
+#[aocio]
+fn parse(a: Vec<i64, ",">) -> Program {
+    Program::new(a)
 }
