@@ -83,6 +83,11 @@ impl Program {
             .map(|row| row.chars().collect())
             .collect()
     }
+    pub fn write_ascii(&mut self, s: &str) {
+        for c in s.as_bytes() {
+            self.write(*c as i64);
+        }
+    }
     fn input(&mut self) -> Option<i64> {
         self.input.pop_front()
     }
