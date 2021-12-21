@@ -6,36 +6,29 @@ use crate::solution::aoc_test;
 pub fn small(mut p: Vec<Tuple<_, ": ", usize>>) -> usize {
     let mut score = [0, 0];
 
-    let mut die = 1;
-    let mut turn = 0;
-
-    for i in 1.. {
-        let mut m = 0;
+    let mut rolled = 0;
+    let mut die = (1..=100).cycle();
+    for turn in (0..2).cycle() {
         for _ in 0..3 {
-            m += die;
-            die += 1;
-            if die > 100 {
-                die = 1;
-            }
+            p[turn] += die.next().unwrap();
+            rolled += 1;
         }
-        p[turn % 2] = (p[turn % 2] + m) % 10;
-        if p[turn % 2] == 0 {
-            p[turn % 2] = 10;
-        }
-        score[turn % 2] += p[turn % 2];
+        score[turn] += match p[turn] % 10 {
+            0 => 10,
+            x => x,
+        };
 
-        if score[turn % 2] >= 1000 {
-            return i * 3 * score[(turn + 1) % 2];
+        if score[turn] >= 1000 {
+            return rolled * score[(turn + 1) % 2];
         }
-        turn += 1
     }
     panic!()
 }
 
 #[aocio]
-pub fn large((p1, p2): Tuple<Tuple<_, ": ", usize>, "\n", Tuple<_, ": ", usize>>) -> i64 {
+pub fn large(p: Vec<Tuple<_, ": ", usize>>) -> i64 {
     let mut dp = vec![vec![vec![vec![vec![vec![0; 3]; 11]; 22]; 11]; 22]; 2];
-    dp[0][0][p1][0][p2][0] = 1i64;
+    dp[0][0][p[0]][0][p[1]][0] = 1i64;
 
     let mut win1 = 0;
     let mut win2 = 0;
@@ -57,7 +50,6 @@ pub fn large((p1, p2): Tuple<Tuple<_, ": ", usize>, "\n", Tuple<_, ": ", usize>>
                                 }
                                 continue;
                             }
-                            // println!("{} {} {} {} {} {}", &turn, &s1, &p1, &s2, &p2, &roll);
                             for d in 1..=3 {
                                 let mut nturn = turn;
                                 let mut ns1 = s1;
