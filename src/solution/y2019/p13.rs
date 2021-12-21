@@ -94,12 +94,10 @@ pub fn large(mut a: Vec<i64, ",">) -> i64 {
         game.update(&mut prog);
         // game.show();
 
-        let input = if game.puddle_x < game.ball_x {
-            1
-        } else if game.puddle_x > game.ball_x {
-            -1
-        } else {
-            0
+        let input = match game.puddle_x.cmp(&game.ball_x) {
+            std::cmp::Ordering::Less => 1,
+            std::cmp::Ordering::Equal => 0,
+            std::cmp::Ordering::Greater => -1,
         };
         prog.write(input);
     }
