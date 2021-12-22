@@ -53,11 +53,11 @@ pub fn large(
         zs.push(*z1);
         zs.push(z2 + 1);
     }
-    xs.sort();
+    xs.sort_unstable();
     xs.dedup();
-    ys.sort();
+    ys.sort_unstable();
     ys.dedup();
-    zs.sort();
+    zs.sort_unstable();
     zs.dedup();
 
     let mut res = 0;

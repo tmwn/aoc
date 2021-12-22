@@ -124,7 +124,7 @@ impl State {
         } else {
             self.instr.push(Instr::Forward(1))
         }
-        return true;
+        true
     }
     fn try_turn(&mut self, d: usize) -> bool {
         let pd = self.d;
@@ -135,7 +135,7 @@ impl State {
         }
         self.instr.pop().unwrap();
         self.d = pd;
-        return false;
+        false
     }
 }
 
