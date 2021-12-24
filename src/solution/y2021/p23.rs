@@ -2,230 +2,175 @@ use std::collections::{BTreeSet, BinaryHeap};
 
 use aocio::aocio;
 
-use crate::solution::{aoc_test, util::grid};
+use crate::solution::aoc_test;
 
 #[aocio]
 pub fn small(a: Vec<String>) -> i32 {
-    solve(a, false)
-}
-#[aocio]
-pub fn large(a: Vec<String>) -> i32 {
-    solve(a, true)
+    solve(a)
 }
 
-pub fn solve(mut a: Vec<String>, large: bool) -> i32 {
+#[aocio]
+pub fn large(mut a: Vec<String>) -> i32 {
+    a.insert(3, "#D#C#B#A#".to_string());
+    a.insert(4, "#D#B#A#C#".to_string());
+    solve(a)
+}
+
+fn solve(mut a: Vec<String>) -> i32 {
     for i in 0..a.len() {
         while a[i].len() < a[0].len() {
             a[i] = " ".to_string() + &a[i] + " ";
         }
     }
-    if large {
-        a.insert(3, "  #D#C#B#A#  ".to_string());
-        a.insert(4, "  #D#B#A#C#  ".to_string());
-    }
-
-    let mut pos = vec![];
-
-    let h = a.len();
-    let w = a[0].len();
-
-    for i in 0..h {
-        for j in 0..w {
-            match a[i].as_bytes()[j] {
-                b'#' | b' ' => (),
-                _ => {
-                    pos.push((i, j));
-                }
-            }
-        }
-    }
-    pos.sort();
-
-    let mut state = vec![-1; pos.len()];
-    for i in 0..pos.len() {
-        let c = a[pos[i].0].as_bytes()[pos[i].1];
-        if c == b'.' {
-            continue;
-        }
-        state[i] = (c - b'A') as i8;
-    }
-    let n = pos.len();
-    let mut dist = vec![vec![i32::MAX / 2; n]; n];
-    for i in 0..n {
-        let (x, y) = pos[i];
-        for (nx, ny) in grid::neighbors(x, y, h, w) {
-            if let Ok(j) = pos.binary_search(&(nx, ny)) {
-                dist[i][j] = 1;
-            }
-        }
-        dist[i][i] = 0;
-    }
-    for k in 0..pos.len() {
-        for i in 0..pos.len() {
-            for j in 0..pos.len() {
-                dist[i][j] = dist[i][j].min(dist[i][k] + dist[k][j]);
-            }
-        }
-    }
-    let mut next = vec![vec![0; n]; n];
-    for i in 0..n {
-        for j in 0..n {
-            for k in 0..n {
-                if dist[i][k] == 1 && dist[i][j] == dist[i][k] + dist[k][j] {
-                    next[i][j] = k;
-                }
-            }
-        }
-    }
-
+    let room_height = a.len() - 3;
+    let start_node = Node {
+        score: 0,
+        state: State::new(a),
+    };
+    start_node.state.show(room_height);
     let mut q = BinaryHeap::new();
-    q.push(Node { state, score: 0 });
-
+    q.push(start_node);
     let mut seen = BTreeSet::new();
-    let weight = [1, 10, 100, 1000];
-
-    while let Some(n) = q.pop() {
-        if n.is_goal(&pos) {
-            return -n.score;
+    while let Some(node) = q.pop() {
+        if node.state.is_goal(room_height) {
+            return -node.score;
         }
-        if seen.contains(&n.state) {
+        if seen.contains(&node.state) {
             continue;
         }
-        seen.insert(n.state.clone());
+        seen.insert(node.state.clone());
 
-        for i in 0..pos.len() {
-            if n.state[i] == -1 {
-                continue;
-            }
-            if n.is_goal_pos(i, &pos) {
-                continue;
-            }
-            let (x1, y1) = pos[i];
-            for j in 0..pos.len() {
-                if n.state[j] != -1 {
-                    continue;
-                }
-                let (x2, y2) = pos[j];
-                if !n.is_ok(&pos, n.state[i], x2, y2, x1) {
-                    continue;
-                }
-                let mut p = i;
-                let mut ok = true;
-                while p != j {
-                    p = next[p][j];
-                    if n.state[p] != -1 {
-                        ok = false;
-                        break;
-                    }
-                }
-                if !ok {
-                    continue;
-                }
-
-                let mut n_state = n.state.clone();
-                n_state[j] = n.state[i];
-                n_state[i] = -1;
-                let n_score = n.score
-                    - ((x1 as i32 - x2 as i32).abs() + (y1 as i32 - y2 as i32).abs())
-                        * weight[n.state[i] as usize];
-                let node = Node {
-                    state: n_state,
-                    score: n_score,
-                };
-                q.push(node);
-            }
+        for (delta, next_state) in node.state.next_states(room_height) {
+            let n_score = node.score - delta;
+            q.push(Node {
+                score: n_score,
+                state: next_state,
+            });
         }
     }
-    panic!()
+    panic!("not found")
 }
 
-#[derive(PartialEq, Eq)]
+type Mask = i32;
+
+const COST: [i32; 4] = [1, 10, 100, 1000];
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct Node {
-    state: Vec<i8>,
     score: i32,
+    state: State,
 }
 
-impl Node {
-    fn is_goal(&self, pos: &Vec<(usize, usize)>) -> bool {
-        for i in 0..pos.len() {
-            let c = self.state[i];
-            let want = match pos[i] {
-                (1, _) => -1,
-                (_, 3) => 0,
-                (_, 5) => 1,
-                (_, 7) => 2,
-                (_, 9) => 3,
-                _ => panic!(),
-            };
-            if c != want {
-                return false;
-            }
-        }
-        true
-    }
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+struct State {
+    hallway: Vec<Option<u8>>,
+    hallway_mask: Mask,
+    rooms: Vec<Vec<u8>>, // stacks
+}
 
-    fn is_goal_pos(&self, i: usize, pos: &Vec<(usize, usize)>) -> bool {
-        if self.state[i] == -1 {
-            return false;
-        }
-        let c = self.state[i];
-        let (x, y) = pos[i];
-        if x == 1 {
-            return false;
-        }
-        if c as usize != (y - 3) / 2 {
-            return false;
-        }
-        for j in (x + 1).. {
-            if let Ok(p) = pos.binary_search(&(j, y)) {
-                if self.state[p] != c {
-                    return false;
-                }
+fn mask_between(mut i: usize, mut j: usize) -> Mask {
+    if i == j {
+        return 0;
+    }
+    if i > j {
+        std::mem::swap(&mut i, &mut j);
+    }
+    (1 << j) - (1 << (i + 1))
+}
+
+impl State {
+    fn show(&self, room_height: usize) {
+        let mut res = "".to_string();
+        for i in 0..11 {
+            res.push(if let Some(c) = self.hallway[i] {
+                (c + b'A') as char
             } else {
-                return true;
-            }
+                '.'
+            });
         }
-        panic!()
-    }
-
-    fn is_ok(&self, pos: &Vec<(usize, usize)>, c: i8, x: usize, y: usize, from_x: usize) -> bool {
-        if x == 1 {
-            if from_x == 1 {
-                return false;
-            }
-            if y == 3 || y == 5 || y == 7 || y == 9 {
-                return false;
-            }
-            return true;
-        }
-        if from_x != 1 {
-            return false;
-        }
-        if c as usize != (y - 3) / 2 {
-            return false;
-        }
-        for j in (x + 1).. {
-            if let Ok(p) = pos.binary_search(&(j, y)) {
-                if self.state[p] != c {
-                    return false;
+        res.push('\n');
+        for i in 0..room_height {
+            for j in 0..11 {
+                if 2 <= j && j <= 8 && j % 2 == 0 {
+                    res.push(
+                        if let Some(c) = self.rooms[(j - 2) / 2].get(room_height - 1 - i) {
+                            (c + b'A') as char
+                        } else {
+                            '.'
+                        },
+                    );
+                } else {
+                    res.push('#');
                 }
-            } else {
-                return true;
+            }
+            res.push('\n');
+        }
+        println!("{}", res);
+    }
+    fn new(a: Vec<String>) -> State {
+        let room_height = a.len() - 3;
+        let mut rooms = vec![vec![]; 4];
+        for i in 0..4 {
+            for j in 0..room_height {
+                rooms[i].push(a[a.len() - 2 - j].as_bytes()[3 + i * 2] - b'A');
             }
         }
-        panic!()
+        State {
+            hallway: vec![None; 11],
+            hallway_mask: 0,
+            rooms,
+        }
     }
-}
-
-impl PartialOrd for Node {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.score.partial_cmp(&other.score)
+    fn next_states(&self, room_height: usize) -> Vec<(i32, State)> {
+        let mut res = vec![];
+        for y1 in [0, 1, 3, 5, 7, 9, 10] {
+            if let Some(c) = self.hallway[y1] {
+                // hallway to room
+                let y2 = (2 * (c + 1)) as usize;
+                if self.hallway_mask & mask_between(y1, y2) > 0 {
+                    continue;
+                }
+                if !self.can_return(c) {
+                    continue;
+                }
+                let mut s = self.clone();
+                s.hallway[y1] = None;
+                s.hallway_mask &= !(1 << y1);
+                s.rooms[c as usize].push(c);
+                let dist = (y1 as i32 - y2 as i32).abs()
+                    + 1
+                    + (room_height - s.rooms[c as usize].len()) as i32;
+                res.push((dist * COST[c as usize], s));
+            } else {
+                // room to hallway
+                for (i, room) in self.rooms.iter().enumerate() {
+                    if room.is_empty() {
+                        continue;
+                    }
+                    let y2 = 2 * (i + 1);
+                    if self.hallway_mask & mask_between(y1, y2) > 0 {
+                        continue;
+                    }
+                    let mut s = self.clone();
+                    let c = s.rooms[i].pop().unwrap();
+                    s.hallway[y1] = Some(c);
+                    s.hallway_mask |= 1 << y1;
+                    let dist =
+                        (y1 as i32 - y2 as i32).abs() + (room_height - s.rooms[i].len()) as i32;
+                    res.push((dist * COST[c as usize], s));
+                }
+            }
+        }
+        res
     }
-}
-
-impl Ord for Node {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.score.cmp(&other.score)
+    fn can_return(&self, c: u8) -> bool {
+        self.rooms[c as usize].iter().all(|i| *i == c)
+    }
+    fn is_goal(&self, room_height: usize) -> bool {
+        if self.rooms.iter().any(|room| room.len() < room_height) {
+            return false;
+        }
+        (0..4).all(|i| self.can_return(i))
     }
 }
 
