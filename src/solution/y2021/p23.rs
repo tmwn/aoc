@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, BinaryHeap, HashSet};
+use std::collections::{BTreeSet, BinaryHeap};
 
 use aocio::aocio;
 
@@ -106,7 +106,7 @@ pub fn solve(mut a: Vec<String>, large: bool) -> i32 {
                     continue;
                 }
                 let (x2, y2) = pos[j];
-                if !n.is_ok(&pos, n.state[i], x2, y2, x1, y1) {
+                if !n.is_ok(&pos, n.state[i], x2, y2, x1) {
                     continue;
                 }
                 let mut p = i;
@@ -188,15 +188,7 @@ impl Node {
         panic!()
     }
 
-    fn is_ok(
-        &self,
-        pos: &Vec<(usize, usize)>,
-        c: i8,
-        x: usize,
-        y: usize,
-        from_x: usize,
-        from_y: usize,
-    ) -> bool {
+    fn is_ok(&self, pos: &Vec<(usize, usize)>, c: i8, x: usize, y: usize, from_x: usize) -> bool {
         if x == 1 {
             if from_x == 1 {
                 return false;
