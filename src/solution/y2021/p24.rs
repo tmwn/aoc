@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap};
 
 use aocio::aocio;
 
@@ -49,10 +49,10 @@ fn run(reg: &mut [i32; 4], prog: &Vec<(String, String, String)>) {
             _ => right.parse().unwrap(),
         };
         match instr.as_str() {
-            "add" => reg[left] = reg[left] + right,
-            "mul" => reg[left] = reg[left] * right,
-            "div" => reg[left] = reg[left] / right,
-            "mod" => reg[left] = reg[left] % right,
+            "add" => reg[left] += right,
+            "mul" => reg[left] *= right,
+            "div" => reg[left] /= right,
+            "mod" => reg[left] %= right,
             "eql" => reg[left] = if reg[left] == right { 1 } else { 0 },
             _ => panic!(),
         }
