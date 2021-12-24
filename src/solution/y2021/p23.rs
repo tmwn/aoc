@@ -27,7 +27,6 @@ fn solve(mut a: Vec<String>) -> i32 {
         score: 0,
         state: State::new(a),
     };
-    start_node.state.show(room_height);
     let mut q = BinaryHeap::new();
     q.push(start_node);
     let mut seen = BTreeSet::new();
@@ -79,34 +78,6 @@ fn mask_between(mut i: usize, mut j: usize) -> Mask {
 }
 
 impl State {
-    fn show(&self, room_height: usize) {
-        let mut res = "".to_string();
-        for i in 0..11 {
-            res.push(if let Some(c) = self.hallway[i] {
-                (c + b'A') as char
-            } else {
-                '.'
-            });
-        }
-        res.push('\n');
-        for i in 0..room_height {
-            for j in 0..11 {
-                if 2 <= j && j <= 8 && j % 2 == 0 {
-                    res.push(
-                        if let Some(c) = self.rooms[(j - 2) / 2].get(room_height - 1 - i) {
-                            (c + b'A') as char
-                        } else {
-                            '.'
-                        },
-                    );
-                } else {
-                    res.push('#');
-                }
-            }
-            res.push('\n');
-        }
-        println!("{}", res);
-    }
     fn new(a: Vec<String>) -> State {
         let room_height = a.len() - 3;
         let mut rooms = vec![vec![]; 4];
@@ -149,6 +120,9 @@ impl State {
                     }
                     let y2 = 2 * (i + 1);
                     if self.hallway_mask & mask_between(y1, y2) > 0 {
+                        continue;
+                    }
+                    if self.can_return(i as u8) {
                         continue;
                     }
                     let mut s = self.clone();
