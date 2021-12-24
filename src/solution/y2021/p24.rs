@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, str::FromStr};
 
 use aocio::aocio;
 
@@ -13,16 +13,17 @@ pub fn large(s: String) -> i64 {
 }
 
 #[aocio]
-pub fn solve(prog: Vec<Vec<Tuple<String, " ", String, " ", String>>, "inp w">) -> (i64, i64) {
-    let max = 10_000_000;
+pub fn solve(prog: Vec<Vec<Tuple<Instr, " ", Pos, " ", Pos>>, "inp w">) -> (i64, i64) {
+    let max = 7_000_000;
     let mut dp = BTreeMap::<i32, (i64, i64)>::new();
+    let mut n_dp = dp.clone();
+
     dp.insert(0, (0, 0));
 
-    let mut n_dp = BTreeMap::<i32, (i64, i64)>::new();
     for p in prog {
         n_dp.clear();
         for (z, val) in dp.iter() {
-            for w in 1i32..=9 {
+            for w in 1..=9 {
                 let n_val = (val.0 * 10 + w as i64, val.1 * 10 + w as i64);
 
                 let mut reg = [w, 0, 0, *z];
@@ -43,20 +44,61 @@ pub fn solve(prog: Vec<Vec<Tuple<String, " ", String, " ", String>>, "inp w">) -
     *dp.get(&0).unwrap()
 }
 
-fn run(reg: &mut [i32; 4], prog: &Vec<(String, String, String)>) {
-    for (instr, left, right) in prog {
-        let left = (left.as_bytes()[0] - b'w') as usize;
-        let right = match right.as_bytes()[0] {
-            x @ b'w'..=b'z' => reg[(x - b'w') as usize],
-            _ => right.parse().unwrap(),
-        };
-        match instr.as_str() {
-            "add" => reg[left] += right,
-            "mul" => reg[left] *= right,
-            "div" => reg[left] /= right,
-            "mod" => reg[left] %= right,
-            "eql" => reg[left] = if reg[left] == right { 1 } else { 0 },
+enum Instr {
+    Add,
+    Mul,
+    Div,
+    Mod,
+    Eql,
+}
+
+impl FromStr for Instr {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "add" => Instr::Add,
+            "mul" => Instr::Mul,
+            "div" => Instr::Div,
+            "mod" => Instr::Mod,
+            "eql" => Instr::Eql,
             _ => panic!(),
+        })
+    }
+}
+
+enum Pos {
+    Index(usize),
+    Immediate(i32),
+}
+
+impl FromStr for Pos {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s.as_bytes()[0] {
+            x @ b'w'..=b'z' => Pos::Index((x - b'w') as usize),
+            _ => Pos::Immediate(s.parse().unwrap()),
+        })
+    }
+}
+
+fn run(reg: &mut [i32], prog: &Vec<(Instr, Pos, Pos)>) {
+    for (instr, left, right) in prog {
+        let left = match left {
+            Pos::Index(i) => *i,
+            _ => panic!(),
+        };
+        let right = match right {
+            Pos::Index(i) => reg[*i],
+            Pos::Immediate(i) => *i,
+        };
+        match instr {
+            Instr::Add => reg[left] += right,
+            Instr::Mul => reg[left] *= right,
+            Instr::Div => reg[left] /= right,
+            Instr::Mod => reg[left] %= right,
+            Instr::Eql => reg[left] = if reg[left] == right { 1 } else { 0 },
         }
     }
 }
